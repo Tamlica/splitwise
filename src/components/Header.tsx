@@ -7,7 +7,7 @@ interface HeaderProps {
 const Header = ({ onReset }: HeaderProps) => {
   return (
     <header className="bg-teal-600 text-white shadow-md">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto px-2 py-6 max-w-4xl">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">SplitWise</h1>
