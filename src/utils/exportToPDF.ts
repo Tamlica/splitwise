@@ -13,7 +13,7 @@ export const exportToPDF = (results: SummaryResult) => {
   // Add people table
   const peopleTableData = results.people.map(person => [
     person.name,
-    formatCurrency(person.originalAmount),
+    import { formatCurrency } from './formatters';(person.originalAmount),
     formatCurrency(person.discountAmount),
     formatCurrency(person.feeAmount),
     formatCurrency(person.finalAmount)
