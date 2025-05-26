@@ -1,6 +1,8 @@
 import { Person, SummaryResult } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { Receipt } from 'lucide-react';
+import { Receipt, FileDown, FileSpreadsheet } from 'lucide-react';
+import { exportToPDF } from '../utils/exportToPDF';
+import { exportToCSV } from '../utils/exportToCSV';
 
 interface SummaryProps {
   people: Person[];
@@ -8,9 +10,37 @@ interface SummaryProps {
 }
 
 const Summary = ({ people, results }: SummaryProps) => {
+  const handleExportPDF = () => {
+    exportToPDF(results);
+  };
+
+  const handleExportCSV = () => {
+    exportToCSV(results);
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 sticky top-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Summary</h2>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-800">Summary</h2>
+        {people.length > 0 && (
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportPDF}
+              className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200"
+            >
+              <FileDown className="h-4 w-4" />
+              PDF
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              CSV
+            </button>
+          </div>
+        )}
+      </div>
 
       {people.length > 0 ? (
         <>
