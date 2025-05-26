@@ -12,10 +12,10 @@ export const exportToCSV = (results: SummaryResult) => {
   const summary = [
     '',
     'Overall Summary',
-    `Total Original,${results.totalOriginal}`,
-    `Total Discount,${results.totalDiscount}`,
-    `Total Fee,${results.totalFee}`,
-    `Grand Total,${results.grandTotal}`
+    `Total Original,${formatCurrency(results.totalOriginal)}`,
+    `Total Discount,${formatCurrency(results.totalDiscount)}`,
+    `Total Fee,${formatCurrency(results.totalFee)}`,
+    `Grand Total,${formatCurrency(results.grandTotal)}`
   ];
 
   const csvContent = [...headers, ...rows, ...summary].join('\n');
