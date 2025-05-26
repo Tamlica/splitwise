@@ -1,4 +1,5 @@
 import { SummaryResult } from '../types';
+import { formatCurrency } from './formatters';
 
 export const exportToCSV = (results: SummaryResult) => {
   // Prepare CSV content
