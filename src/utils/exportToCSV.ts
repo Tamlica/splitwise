@@ -6,7 +6,7 @@ export const exportToCSV = (results: SummaryResult) => {
   const headers = ['Name,Original,Discount,Fee,Final'];
   
   const rows = results.people.map(person => 
-    `${person.name},${person.originalAmount},${person.discountAmount},${person.feeAmount},${person.finalAmount}`
+    `${formatCurrency(person.name)},${formatCurrency(person.originalAmount)},${formatCurrency(person.discountAmount)},${formatCurrency(person.feeAmount)},${formatCurrency(person.finalAmount)}`
   );
 
   const summary = [
