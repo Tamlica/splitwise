@@ -76,7 +76,7 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
               onClick={() => setIsPercentage(!isPercentage)}
               className={`w-full py-2 px-3 rounded-md flex items-center justify-center border ${
                 isPercentage 
-                  ? 'bg-purple-100 border-purple-300 text-purple-800' 
+                  ? 'bg-teal-100 border-teal-300 text-teal-800' 
                   : 'bg-gray-100 border-gray-300 text-gray-700'
               }`}
             >
