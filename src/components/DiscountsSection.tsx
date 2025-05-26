@@ -86,7 +86,7 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
           <div className="sm:col-span-3">
             <button
               onClick={handleAddDiscount}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
             >
               <Tag className="h-4 w-4" />
               <span>Add</span>
