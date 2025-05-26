@@ -69,7 +69,7 @@ const PeopleSection = ({ people, setPeople }: PeopleSectionProps) => {
               onClick={handleAddPerson}
               className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus  />
               <span>Add</span>
             </button>
           </div>
