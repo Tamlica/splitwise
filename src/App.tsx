@@ -25,13 +25,13 @@ function App() {
       <Header onReset={handleReset} />
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Summary people={people} results={results} />
-          </div>
           <div className="space-y-6">
             <PeopleSection people={people} setPeople={setPeople} />
             <DiscountsSection discounts={discounts} setDiscounts={setDiscounts} />
             <FeesSection fees={fees} setFees={setFees} />
+          </div>
+          <div className="lg:col-span-2 space-y-6">
+            <Summary people={people} results={results} />
           </div>
         </div>
       </main>
