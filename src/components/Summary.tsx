@@ -80,7 +80,7 @@ const Summary = ({ people, results }: SummaryProps) => {
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h3 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
               <Receipt className="h-5 w-5 mr-2 text-teal-600" />
-              Overall Summary
+              Overall Summary {results.isEqualSplit && <span className="ml-2 text-blue-600 text-sm">(Equal Split)</span>}
             </h3>
 
             <div className="space-y-2">

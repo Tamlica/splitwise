@@ -3,7 +3,8 @@ import { Person, Discount, Fee, SummaryResult, PersonResult } from '../types';
 export const calculateFinalAmounts = (
   people: Person[],
   discounts: Discount[],
-  fees: Fee[]
+  fees: Fee[],
+  isEqualSplit: boolean = false
 ): SummaryResult => {
   if (people.length === 0) {
     return {
@@ -12,6 +13,7 @@ export const calculateFinalAmounts = (
       totalDiscount: 0,
       totalFee: 0,
       grandTotal: 0,
+      isEqualSplit,
     };
   }
 
@@ -69,5 +71,6 @@ export const calculateFinalAmounts = (
     totalDiscount,
     totalFee,
     grandTotal,
+    isEqualSplit,
   };
 };

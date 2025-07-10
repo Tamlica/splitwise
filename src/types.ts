@@ -33,4 +33,5 @@ export interface SummaryResult {
   totalDiscount: number;
   totalFee: number;
   grandTotal: number;
+  isEqualSplit: boolean;
 }

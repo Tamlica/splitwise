@@ -11,14 +11,16 @@ function App() {
   const [people, setPeople] = useState<Person[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [fees, setFees] = useState<Fee[]>([]);
+  const [isEqualSplit, setIsEqualSplit] = useState(false);
 
   const handleReset = () => {
     setPeople([]);
     setDiscounts([]);
     setFees([]);
+    setIsEqualSplit(false);
   };
 
-  const results = calculateFinalAmounts(people, discounts, fees);
+  const results = calculateFinalAmounts(people, discounts, fees, isEqualSplit);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,7 +28,12 @@ function App() {
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-6">
-            <PeopleSection people={people} setPeople={setPeople} />
+            <PeopleSection 
+              people={people} 
+              setPeople={setPeople}
+              isEqualSplit={isEqualSplit}
+              setIsEqualSplit={setIsEqualSplit}
+            />
             <DiscountsSection discounts={discounts} setDiscounts={setDiscounts} />
             <FeesSection fees={fees} setFees={setFees} />
           </div>
