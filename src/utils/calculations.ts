@@ -20,6 +20,25 @@ export const calculateFinalAmounts = (
   // Calculate the total original amount
   const totalOriginal = people.reduce((sum, person) => sum + person.amount, 0);
 
+  // If total is 0 (which can happen in equal split mode), return zeros
+  if (totalOriginal === 0) {
+    return {
+      people: people.map(person => ({
+        id: person.id,
+        name: person.name,
+        originalAmount: 0,
+        discountAmount: 0,
+        feeAmount: 0,
+        finalAmount: 0,
+      })),
+      totalOriginal: 0,
+      totalDiscount: 0,
+      totalFee: 0,
+      grandTotal: 0,
+      isEqualSplit,
+    };
+  }
+
   // Calculate total discount amount
   const totalDiscount = discounts.reduce((sum, discount) => {
     if (discount.isPercentage) {
