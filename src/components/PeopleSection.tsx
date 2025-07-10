@@ -75,6 +75,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit }: Peo
       setPeople(updatedPeople);
     }
   };
+
   const handleRemovePerson = (id: string) => {
     const updatedPeople = people.filter((person) => person.id !== id);
     setPeople(updatedPeople);
@@ -180,59 +181,6 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit }: Peo
                   {isEqualSplit && (
                     <span className="ml-2 text-blue-600 text-xs">(Equal Share)</span>
                   )}
-                </div>
-              </div>
-              <button
-                onClick={() => handleRemovePerson(person.id)}
-                className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-gray-500 py-4">
-          No people added yet
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default PeopleSection;
-            <input
-              type="number"
-              placeholder="Amount (IDR)"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <button
-              onClick={handleAddPerson}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span> Add</span>
-            </button>
-          </div>
-        </div>
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      </div>
-
-      {people.length > 0 ? (
-        <div className="space-y-3">
-          {people.map((person) => (
-            <div
-              key={person.id}
-              className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
-            >
-              <div className="flex-1">
-                <div className="font-medium">{person.name}</div>
-                <div className="text-gray-500 text-sm">
-                  IDR {person.amount.toLocaleString('id-ID')}
                 </div>
               </div>
               <button
