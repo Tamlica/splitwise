@@ -7,12 +7,13 @@ interface PeopleSectionProps {
   setPeople: React.Dispatch<React.SetStateAction<Person[]>>;
   isEqualSplit: boolean;
   setIsEqualSplit: React.Dispatch<React.SetStateAction<boolean>>;
+  totalAmount: string;
+  setTotalAmount: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit }: PeopleSectionProps) => {
+const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount }: PeopleSectionProps) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');
   const [error, setError] = useState('');
 
   const handleAddPerson = () => {
@@ -47,51 +48,24 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit }: Peo
     const newIsEqualSplit = !isEqualSplit;
     setIsEqualSplit(newIsEqualSplit);
     
-    if (newIsEqualSplit && people.length > 0) {
-      // When switching to equal split, calculate equal amounts
-      const total = parseFloat(totalAmount) || 0;
-      if (total > 0) {
-        const equalAmount = total / people.length;
-        const updatedPeople = people.map(person => ({
-          ...person,
-          amount: equalAmount
-        }));
-        setPeople(updatedPeople);
-      }
+    if (!newIsEqualSplit) {
+      // When switching off equal split, reset individual amounts to 0
+      const updatedPeople = people.map(person => ({
+        ...person,
+        amount: 0
+      }));
+      setPeople(updatedPeople);
     }
     setError('');
   };
 
   const handleTotalAmountChange = (value: string) => {
     setTotalAmount(value);
-    const total = parseFloat(value) || 0;
-    
-    if (isEqualSplit && people.length > 0 && total > 0) {
-      const equalAmount = total / people.length;
-      const updatedPeople = people.map(person => ({
-        ...person,
-        amount: equalAmount
-      }));
-      setPeople(updatedPeople);
-    }
   };
 
   const handleRemovePerson = (id: string) => {
     const updatedPeople = people.filter((person) => person.id !== id);
     setPeople(updatedPeople);
-    
-    // Recalculate equal amounts if in equal split mode
-    if (isEqualSplit && updatedPeople.length > 0) {
-      const total = parseFloat(totalAmount) || 0;
-      if (total > 0) {
-        const equalAmount = total / updatedPeople.length;
-        const recalculatedPeople = updatedPeople.map(person => ({
-          ...person,
-          amount: equalAmount
-        }));
-        setPeople(recalculatedPeople);
-      }
-    }
   };
 
   return (

@@ -4,7 +4,8 @@ export const calculateFinalAmounts = (
   people: Person[],
   discounts: Discount[],
   fees: Fee[],
-  isEqualSplit: boolean = false
+  isEqualSplit: boolean = false,
+  totalAmountStr: string = ''
 ): SummaryResult => {
   if (people.length === 0) {
     return {
@@ -18,9 +19,17 @@ export const calculateFinalAmounts = (
   }
 
   // Calculate the total original amount
-  const totalOriginal = people.reduce((sum, person) => sum + person.amount, 0);
+  let totalOriginal: number;
+  
+  if (isEqualSplit) {
+    // In equal split mode, use the total amount entered by user
+    totalOriginal = parseFloat(totalAmountStr) || 0;
+  } else {
+    // In individual mode, sum up all individual amounts
+    totalOriginal = people.reduce((sum, person) => sum + person.amount, 0);
+  }
 
-  // If total is 0 (which can happen in equal split mode), return zeros
+  // If total is 0, return zeros
   if (totalOriginal === 0) {
     return {
       people: people.map(person => ({
@@ -62,8 +71,18 @@ export const calculateFinalAmounts = (
 
   // Calculate individual results
   const peopleResults: PersonResult[] = people.map((person) => {
-    // Calculate proportion of the total
-    const proportion = totalOriginal > 0 ? person.amount / totalOriginal : 0;
+    let originalAmount: number;
+    let proportion: number;
+    
+    if (isEqualSplit && totalOriginal > 0) {
+      // In equal split mode, each person gets an equal share
+      originalAmount = totalOriginal / people.length;
+      proportion = 1 / people.length;
+    } else {
+      // In individual mode, use their specific amount
+      originalAmount = person.amount;
+      proportion = totalOriginal > 0 ? person.amount / totalOriginal : 0;
+    }
 
     // Calculate individual discount amount
     const discountAmount = totalDiscount * proportion;
@@ -72,12 +91,12 @@ export const calculateFinalAmounts = (
     const feeAmount = totalFee * proportion;
 
     // Calculate final amount
-    const finalAmount = person.amount - discountAmount + feeAmount;
+    const finalAmount = originalAmount - discountAmount + feeAmount;
 
     return {
       id: person.id,
       name: person.name,
-      originalAmount: person.amount,
+      originalAmount,
       discountAmount,
       feeAmount,
       finalAmount,
