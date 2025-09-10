@@ -1,5 +1,5 @@
 import { Person, SummaryResult } from '../types';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, roundUpToThousand } from '../utils/formatters';
 import { Receipt, FileDown, FileSpreadsheet } from 'lucide-react';
 import { exportToPDF } from '../utils/exportToPDF';
 import { exportToCSV } from '../utils/exportToCSV';
@@ -100,10 +100,18 @@ const Summary = ({ people, results }: SummaryProps) => {
                   +{formatCurrency(results.totalFee)}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Calculated Total:</span>
+                <span className="font-medium">{formatCurrency(results.grandTotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-teal-600">Rounded Total:</span>
+                <span className="font-medium text-teal-600">{formatCurrency(roundUpToThousand(results.grandTotal))}</span>
+              </div>
               <div className="border-t border-gray-200 pt-2 mt-2">
                 <div className="flex justify-between text-lg">
-                  <span className="font-bold">Grand Total:</span>
-                  <span className="font-bold text-teal-700">{formatCurrency(results.grandTotal)}</span>
+                  <span className="font-bold">Final Total (Rounded):</span>
+                  <span className="font-bold text-teal-700">{formatCurrency(roundUpToThousand(results.people.reduce((sum, person) => sum + person.finalAmount, 0)))}</span>
                 </div>
               </div>
             </div>

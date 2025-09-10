@@ -1,4 +1,5 @@
 import { Person, Discount, Fee, SummaryResult, PersonResult } from '../types';
+import { roundUpToThousand } from './formatters';
 
 export const calculateFinalAmounts = (
   people: Person[],
@@ -91,7 +92,8 @@ export const calculateFinalAmounts = (
     const feeAmount = totalFee * proportion;
 
     // Calculate final amount
-    const finalAmount = originalAmount - discountAmount + feeAmount;
+    const calculatedAmount = originalAmount - discountAmount + feeAmount;
+    const finalAmount = roundUpToThousand(calculatedAmount);
 
     return {
       id: person.id,
