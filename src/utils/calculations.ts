@@ -27,7 +27,10 @@ export const calculateFinalAmounts = (
     totalOriginal = parseFloat(totalAmountStr) || 0;
   } else {
     // In individual mode, sum up all individual amounts
-    totalOriginal = people.reduce((sum, person) => sum + person.amount, 0);
+    totalOriginal = people.reduce((sum, person) => {
+      const foodTotal = person.foods?.reduce((foodSum, food) => foodSum + food.price, 0) || 0;
+      return sum + foodTotal;
+    }, 0);
   }
 
   // If total is 0, return zeros
