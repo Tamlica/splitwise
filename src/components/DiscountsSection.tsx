@@ -89,7 +89,7 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
                   : 'bg-gray-100 border-gray-300 text-gray-700'
               }`}
             >
-              <Percent className="h-4 w-4" />
+              <Percent className="h-5 w-4" />
             </button>
           </div>
           <div className="sm:col-span-3">
