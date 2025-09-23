@@ -225,7 +225,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                       onClick={() => handleAddFood(person.id)}
                       className="w-full bg-teal-500 hover:bg-teal-600 text-white px-2 py-1.5 rounded-md text-sm flex items-center justify-center"
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-5 w-3" />
                     </button>
                   </div>
                 </div>
