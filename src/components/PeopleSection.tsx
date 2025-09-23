@@ -275,32 +275,3 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
 };
 
 export default PeopleSection;
-                  <input
-                    type="text"
-                    placeholder="Add food item"
-                    value={foodName}
-                    onChange={(e) => setFoodName(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
-                    className="flex-1 p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
-                  />
-                  <button
-                    onClick={() => handleAddFood(person.id)}
-                    className="bg-teal-500 hover:bg-teal-600 text-white px-2 py-1.5 rounded-md text-sm flex items-center"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-gray-500 py-4">
-          No people added yet
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default PeopleSection;
