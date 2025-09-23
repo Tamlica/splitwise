@@ -2,6 +2,7 @@ export interface Person {
   id: string;
   name: string;
   amount: number;
+  foods: string[];
 }
 
 export interface Discount {

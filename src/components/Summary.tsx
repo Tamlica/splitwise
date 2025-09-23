@@ -50,8 +50,6 @@ const Summary = ({ people, results }: SummaryProps) => {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-2">Name</th>
                   <th className="text-right py-3 px-2">Original</th>
-                  <th className="text-right py-3 px-2">Discount (-)</th>
-                  <th className="text-right py-3 px-2">Fee (+)</th>
                   <th className="text-right py-3 px-2">Final</th>
                 </tr>
               </thead>
@@ -61,12 +59,6 @@ const Summary = ({ people, results }: SummaryProps) => {
                     <td className="py-3 px-2">{person.name}</td>
                     <td className="text-right py-3 px-2 text-gray-600">
                       {formatCurrency(person.originalAmount)}
-                    </td>
-                    <td className="text-right py-3 px-2 text-purple-600">
-                      {formatCurrency(person.discountAmount)}
-                    </td>
-                    <td className="text-right py-3 px-2 text-orange-600">
-                      {formatCurrency(person.feeAmount)}
                     </td>
                     <td className="text-right py-3 px-2 font-medium">
                       {formatCurrency(person.finalAmount)}

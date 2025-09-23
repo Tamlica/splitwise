@@ -43,6 +43,13 @@ const FeesSection = ({ fees, setFees }: FeesSectionProps) => {
     setError('');
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   const handleRemoveFee = (id: string) => {
     setFees(fees.filter((fee) => fee.id !== id));
   };
@@ -59,6 +66,7 @@ const FeesSection = ({ fees, setFees }: FeesSectionProps) => {
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, handleAddFee)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -68,6 +76,7 @@ const FeesSection = ({ fees, setFees }: FeesSectionProps) => {
               placeholder="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, handleAddFee)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>

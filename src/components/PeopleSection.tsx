@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Person } from '../types';
-import { UserPlus, Trash2, Users } from 'lucide-react';
+import { UserPlus, Trash2, Users, Plus, X } from 'lucide-react';
 
 interface PeopleSectionProps {
   people: Person[];
@@ -14,6 +14,7 @@ interface PeopleSectionProps {
 const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount }: PeopleSectionProps) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
+  const [foodName, setFoodName] = useState('');
   const [error, setError] = useState('');
 
   const handleAddPerson = () => {
@@ -36,12 +37,41 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
       id: Date.now().toString(),
       name: name.trim(),
       amount: numAmount,
+      foods: [],
     };
 
     setPeople([...people, newPerson]);
     setName('');
     setAmount('');
     setError('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      action();
+    }
+  };
+
+  const handleAddFood = (personId: string) => {
+    if (!foodName.trim()) return;
+    
+    const updatedPeople = people.map(person => 
+      person.id === personId 
+        ? { ...person, foods: [...person.foods, foodName.trim()] }
+        : person
+    );
+    setPeople(updatedPeople);
+    setFoodName('');
+  };
+
+  const handleRemoveFood = (personId: string, foodIndex: number) => {
+    const updatedPeople = people.map(person => 
+      person.id === personId 
+        ? { ...person, foods: person.foods.filter((_, index) => index !== foodIndex) }
+        : person
+    );
+    setPeople(updatedPeople);
   };
 
   const handleEqualSplitToggle = () => {
@@ -52,7 +82,8 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
       // When switching off equal split, reset individual amounts to 0
       const updatedPeople = people.map(person => ({
         ...person,
-        amount: 0
+        amount: 0,
+        foods: person.foods // Keep foods when switching modes
       }));
       setPeople(updatedPeople);
     }
@@ -114,6 +145,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, handleAddPerson)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -124,6 +156,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                 placeholder="Amount (IDR)"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                onKeyPress={(e) => handleKeyPress(e, handleAddPerson)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
@@ -146,23 +179,64 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
           {people.map((person) => (
             <div
               key={person.id}
-              className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
+              className="p-4 bg-gray-50 rounded-md"
             >
-              <div className="flex-1">
-                <div className="font-medium">{person.name}</div>
-                <div className="text-gray-500 text-sm">
-                  IDR {person.amount.toLocaleString('id-ID')}
-                  {isEqualSplit && (
-                    <span className="ml-2 text-blue-600 text-xs">(Equal Share)</span>
-                  )}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <div className="font-medium">{person.name}</div>
+                  <div className="text-gray-500 text-sm">
+                    IDR {person.amount.toLocaleString('id-ID')}
+                    {isEqualSplit && (
+                      <span className="ml-2 text-blue-600 text-xs">(Equal Share)</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRemovePerson(person.id)}
+                  className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              
+              {/* Foods section */}
+              <div className="space-y-2">
+                {person.foods.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {person.foods.map((food, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"
+                      >
+                        {food}
+                        <button
+                          onClick={() => handleRemoveFood(person.id, index)}
+                          className="ml-1 text-teal-600 hover:text-teal-800"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add food item"
+                    value={foodName}
+                    onChange={(e) => setFoodName(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
+                    className="flex-1 p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                  <button
+                    onClick={() => handleAddFood(person.id)}
+                    className="bg-teal-500 hover:bg-teal-600 text-white px-2 py-1.5 rounded-md text-sm flex items-center"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => handleRemovePerson(person.id)}
-                className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
             </div>
           ))}
         </div>

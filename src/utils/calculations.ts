@@ -59,13 +59,7 @@ export const calculateFinalAmounts = (
   }, 0);
 
   // Calculate total fee amount
-  const totalFee = fees.reduce((sum, fee) => {
-    if (fee.isPercentage) {
-      return sum + (totalOriginal * fee.amount) / 100;
-    } else {
-      return sum + fee.amount;
-    }
-  }, 0);
+  const totalFee = fees.reduce((sum, fee) => sum + fee.amount, 0);
 
   // Calculate the grand total
   const grandTotal = totalOriginal - totalDiscount + totalFee;
@@ -88,8 +82,8 @@ export const calculateFinalAmounts = (
     // Calculate individual discount amount
     const discountAmount = totalDiscount * proportion;
 
-    // Calculate individual fee amount
-    const feeAmount = totalFee * proportion;
+    // Calculate individual fee amount (split equally among all people)
+    const feeAmount = people.length > 0 ? totalFee / people.length : 0;
 
     // Calculate final amount
     const calculatedAmount = originalAmount - discountAmount + feeAmount;

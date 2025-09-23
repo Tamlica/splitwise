@@ -43,6 +43,13 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
     setError('');
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      action();
+    }
+  };
+
   const handleRemoveDiscount = (id: string) => {
     setDiscounts(discounts.filter((discount) => discount.id !== id));
   };
@@ -59,6 +66,7 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, handleAddDiscount)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -68,6 +76,7 @@ const DiscountsSection = ({ discounts, setDiscounts }: DiscountsSectionProps) =>
               placeholder="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, handleAddDiscount)}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
