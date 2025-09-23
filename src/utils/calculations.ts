@@ -74,10 +74,10 @@ export const calculateFinalAmounts = (
       originalAmount = totalOriginal / people.length;
       proportion = 1 / people.length;
     } else {
-      // In individual mode, calculate from food items or use their specific amount
+      // In individual mode, calculate from food items
       const foodTotal = person.foods.reduce((sum, food) => sum + food.price, 0);
-      originalAmount = foodTotal > 0 ? foodTotal : person.amount;
-      proportion = totalOriginal > 0 ? person.amount / totalOriginal : 0;
+      originalAmount = foodTotal;
+      proportion = totalOriginal > 0 ? foodTotal / totalOriginal : 0;
     }
 
     // Calculate individual discount amount

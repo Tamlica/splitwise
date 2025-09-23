@@ -13,7 +13,6 @@ interface PeopleSectionProps {
 
 const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount }: PeopleSectionProps) => {
   const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
   const [foodName, setFoodName] = useState('');
   const [foodPrice, setFoodPrice] = useState('');
   const [error, setError] = useState('');
@@ -24,26 +23,16 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
       return;
     }
     
-    let numAmount = 0;
-    
-    if (!isEqualSplit) {
-      numAmount = parseFloat(amount);
-      if (isNaN(numAmount) || numAmount <= 0) {
-        setError('Please enter a valid amount');
-        return;
-      }
-    }
 
     const newPerson: Person = {
       id: Date.now().toString(),
       name: name.trim(),
-      amount: numAmount,
+      amount: 0,
       foods: [],
     };
 
     setPeople([...people, newPerson]);
     setName('');
-    setAmount('');
     setError('');
   };
 
@@ -89,15 +78,6 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
     const newIsEqualSplit = !isEqualSplit;
     setIsEqualSplit(newIsEqualSplit);
     
-    if (!newIsEqualSplit) {
-      // When switching off equal split, reset individual amounts to 0
-      const updatedPeople = people.map(person => ({
-        ...person,
-        amount: 0,
-        foods: person.foods // Keep foods when switching modes
-      }));
-      setPeople(updatedPeople);
-    }
     setError('');
   };
 
@@ -150,7 +130,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
 
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-2">
-          <div className="sm:col-span-5">
+          <div className="sm:col-span-9">
             <input
               type="text"
               placeholder="Name"
@@ -160,19 +140,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
-          {!isEqualSplit && (
-            <div className="sm:col-span-4">
-              <input
-                type="number"
-                placeholder="Amount (IDR)"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                onKeyPress={(e) => handleKeyPress(e, handleAddPerson)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-          )}
-          <div className={isEqualSplit ? "sm:col-span-7" : "sm:col-span-3"}>
+          <div className="sm:col-span-3">
             <button
               onClick={handleAddPerson}
               className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
@@ -196,7 +164,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                 <div className="flex-1">
                   <div className="font-medium">{person.name}</div>
                   <div className="text-gray-500 text-sm">
-                    IDR {person.amount.toLocaleString('id-ID')}
+                    IDR {(person.foods.reduce((sum, food) => sum + food.price, 0)).toLocaleString('id-ID')}
                     {isEqualSplit && (
                       <span className="ml-2 text-blue-600 text-xs">(Equal Share)</span>
                     )}
