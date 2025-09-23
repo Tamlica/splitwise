@@ -49,13 +49,28 @@ const Summary = ({ people, results }: SummaryProps) => {
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-2">Name</th>
+                  <th className="text-left py-3 px-2">Foods</th>
                   <th className="text-right py-3 px-2">Original</th>
                   <th className="text-right py-3 px-2">Final</th>
                 </tr>
               </thead>
               <tbody>
                 {results.people.map((person) => (
+                  const originalPerson = people.find(p => p.id === person.id);
                   <tr key={person.id} className="border-b border-gray-100">
+                      <td className="py-3 px-2">
+                        {originalPerson?.foods && originalPerson.foods.length > 0 ? (
+                          <div className="space-y-1">
+                            {originalPerson.foods.map((food, index) => (
+                              <div key={index} className="text-xs text-gray-600">
+                                {food.name} - {formatCurrency(food.price)}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No items</span>
+                        )}
+                      </td>
                     <td className="py-3 px-2">{person.name}</td>
                     <td className="text-right py-3 px-2 text-gray-600">
                       {formatCurrency(person.originalAmount)}
@@ -63,7 +78,7 @@ const Summary = ({ people, results }: SummaryProps) => {
                     <td className="text-right py-3 px-2 font-medium">
                       {formatCurrency(person.finalAmount)}
                     </td>
-                  </tr>
+                  );
                 ))}
               </tbody>
             </table>

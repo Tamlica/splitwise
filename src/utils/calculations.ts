@@ -74,8 +74,9 @@ export const calculateFinalAmounts = (
       originalAmount = totalOriginal / people.length;
       proportion = 1 / people.length;
     } else {
-      // In individual mode, use their specific amount
-      originalAmount = person.amount;
+      // In individual mode, calculate from food items or use their specific amount
+      const foodTotal = person.foods.reduce((sum, food) => sum + food.price, 0);
+      originalAmount = foodTotal > 0 ? foodTotal : person.amount;
       proportion = totalOriginal > 0 ? person.amount / totalOriginal : 0;
     }
 

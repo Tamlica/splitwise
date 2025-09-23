@@ -1,8 +1,14 @@
+export interface FoodItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface Person {
   id: string;
   name: string;
   amount: number;
-  foods: string[];
+  foods: FoodItem[];
 }
 
 export interface Discount {

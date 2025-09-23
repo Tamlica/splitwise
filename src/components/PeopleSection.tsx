@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Person } from '../types';
+import { Person, FoodItem } from '../types';
 import { UserPlus, Trash2, Users, Plus, X } from 'lucide-react';
 
 interface PeopleSectionProps {
@@ -15,6 +15,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [foodName, setFoodName] = useState('');
+  const [foodPrice, setFoodPrice] = useState('');
   const [error, setError] = useState('');
 
   const handleAddPerson = () => {
@@ -54,15 +55,25 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
   };
 
   const handleAddFood = (personId: string) => {
-    if (!foodName.trim()) return;
+    if (!foodName.trim() || !foodPrice.trim()) return;
+    
+    const price = parseFloat(foodPrice);
+    if (isNaN(price) || price <= 0) return;
+    
+    const newFood: FoodItem = {
+      id: Date.now().toString(),
+      name: foodName.trim(),
+      price: price
+    };
     
     const updatedPeople = people.map(person => 
       person.id === personId 
-        ? { ...person, foods: [...person.foods, foodName.trim()] }
+        ? { ...person, foods: [...person.foods, newFood] }
         : person
     );
     setPeople(updatedPeople);
     setFoodName('');
+    setFoodPrice('');
   };
 
   const handleRemoveFood = (personId: string, foodIndex: number) => {
@@ -208,7 +219,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                         key={index}
                         className="inline-flex items-center bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full"
                       >
-                        {food}
+                        {food.name} - IDR {food.price.toLocaleString('id-ID')}
                         <button
                           onClick={() => handleRemoveFood(person.id, index)}
                           className="ml-1 text-teal-600 hover:text-teal-800"
@@ -220,7 +231,50 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                   </div>
                 )}
                 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                  <div className="sm:col-span-5">
+                    <input
+                      type="text"
+                      placeholder="Food name"
+                      value={foodName}
+                      onChange={(e) => setFoodName(e.target.value)}
+                      onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
+                      className="w-full p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    />
+                  </div>
+                  <div className="sm:col-span-4">
+                    <input
+                      type="number"
+                      placeholder="Price (IDR)"
+                      value={foodPrice}
+                      onChange={(e) => setFoodPrice(e.target.value)}
+                      onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
+                      className="w-full p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <button
+                      onClick={() => handleAddFood(person.id)}
+                      className="w-full bg-teal-500 hover:bg-teal-600 text-white px-2 py-1.5 rounded-md text-sm flex items-center justify-center"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 py-4">
+          No people added yet
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PeopleSection;
                   <input
                     type="text"
                     placeholder="Add food item"
