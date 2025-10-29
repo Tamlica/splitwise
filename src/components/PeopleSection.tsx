@@ -13,8 +13,7 @@ interface PeopleSectionProps {
 
 const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount }: PeopleSectionProps) => {
   const [name, setName] = useState('');
-  const [foodName, setFoodName] = useState('');
-  const [foodPrice, setFoodPrice] = useState('');
+  const [foodInputs, setFoodInputs] = useState<{[personId: string]: {name: string, price: string}}>({});
   const [error, setError] = useState('');
 
   const handleAddPerson = () => {
@@ -44,14 +43,15 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
   };
 
   const handleAddFood = (personId: string) => {
-    if (!foodName.trim() || !foodPrice.trim()) return;
+    const inputs = foodInputs[personId];
+    if (!inputs?.name.trim() || !inputs?.price.trim()) return;
     
-    const price = parseFloat(foodPrice);
+    const price = parseFloat(inputs.price);
     if (isNaN(price) || price <= 0) return;
     
     const newFood: FoodItem = {
       id: Date.now().toString(),
-      name: foodName.trim(),
+      name: inputs.name.trim(),
       price: price
     };
     
@@ -61,8 +61,12 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
         : person
     );
     setPeople(updatedPeople);
-    setFoodName('');
-    setFoodPrice('');
+    
+    // Clear inputs for this person
+    setFoodInputs(prev => ({
+      ...prev,
+      [personId]: { name: '', price: '' }
+    }));
   };
 
   const handleRemoveFood = (personId: string, foodIndex: number) => {
@@ -72,6 +76,20 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
         : person
     );
     setPeople(updatedPeople);
+  };
+
+  const updateFoodInput = (personId: string, field: 'name' | 'price', value: string) => {
+    setFoodInputs(prev => ({
+      ...prev,
+      [personId]: {
+        ...prev[personId],
+        [field]: value
+      }
+    }));
+  };
+
+  const getFoodInput = (personId: string, field: 'name' | 'price'): string => {
+    return foodInputs[personId]?.[field] || '';
   };
 
   const handleEqualSplitToggle = () => {
@@ -204,8 +222,8 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                     <input
                       type="text"
                       placeholder="Food name"
-                      value={foodName}
-                      onChange={(e) => setFoodName(e.target.value)}
+                      value={getFoodInput(person.id, 'name')}
+                      onChange={(e) => updateFoodInput(person.id, 'name', e.target.value)}
                       onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
                       className="w-full p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
                     />
@@ -214,8 +232,8 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
                     <input
                       type="number"
                       placeholder="Price (IDR)"
-                      value={foodPrice}
-                      onChange={(e) => setFoodPrice(e.target.value)}
+                      value={getFoodInput(person.id, 'price')}
+                      onChange={(e) => updateFoodInput(person.id, 'price', e.target.value)}
                       onKeyPress={(e) => handleKeyPress(e, () => handleAddFood(person.id))}
                       className="w-full p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500"
                     />
