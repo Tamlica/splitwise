@@ -1,9 +1,11 @@
 import { SummaryResult } from '../types';
 import { formatCurrency } from './formatters';
 
-export const exportToCSV = (results: SummaryResult) => {
+export const exportToCSV = (results: SummaryResult, restaurantName?: string) => {
   // Prepare CSV content
-  const headers = ['Name,Original,Discount,Fee,Final'];
+  const headers = restaurantName 
+    ? [`Restaurant: ${restaurantName}`, '', 'Name,Original,Discount,Fee,Final']
+    : ['Name,Original,Discount,Fee,Final'];
   
   const rows = results.people.map(person => 
     `${person.name},${formatCurrency(person.originalAmount)},${formatCurrency(person.discountAmount)},${formatCurrency(person.feeAmount)},${formatCurrency(person.finalAmount)}`

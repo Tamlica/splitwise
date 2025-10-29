@@ -7,21 +7,27 @@ import { exportToCSV } from '../utils/exportToCSV';
 interface SummaryProps {
   people: Person[];
   results: SummaryResult;
+  restaurantName: string;
 }
 
-const Summary = ({ people, results }: SummaryProps) => {
+const Summary = ({ people, results, restaurantName }: SummaryProps) => {
   const handleExportPDF = () => {
-    exportToPDF(results);
+    exportToPDF(results, restaurantName);
   };
 
   const handleExportCSV = () => {
-    exportToCSV(results);
+    exportToCSV(results, restaurantName);
   };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Summary</h2>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">Summary</h2>
+          {restaurantName && (
+            <p className="text-sm text-teal-600 mt-1">📍 {restaurantName}</p>
+          )}
+        </div>
         {people.length > 0 && (
           <div className="flex gap-2">
             <button

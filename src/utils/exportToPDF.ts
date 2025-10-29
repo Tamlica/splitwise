@@ -3,12 +3,20 @@ import autoTable from 'jspdf-autotable';
 import { SummaryResult } from '../types';
 import { formatCurrency } from './formatters';
 
-export const exportToPDF = (results: SummaryResult) => {
+export const exportToPDF = (results: SummaryResult, restaurantName?: string) => {
   const doc = new jsPDF();
 
   // Add title
   doc.setFontSize(20);
-  doc.text('Bill Split Summary', 14, 20);
+  let startY = 20;
+  doc.text('Bill Split Summary', 14, startY);
+  
+  if (restaurantName) {
+    startY += 10;
+    doc.setFontSize(14);
+    doc.text(`Restaurant: ${restaurantName}`, 14, startY);
+    startY += 5;
+  }
 
   // Add people table
   const peopleTableData = results.people.map(person => [
@@ -22,7 +30,7 @@ export const exportToPDF = (results: SummaryResult) => {
   autoTable(doc, {
     head: [['Name', 'Original', 'Discount', 'Fee', 'Final']],
     body: peopleTableData,
-    startY: 30,
+    startY: startY + 10,
   });
 
   // Add overall summary
