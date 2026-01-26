@@ -62,7 +62,13 @@ export const calculateFinalAmounts = (
   }, 0);
 
   // Calculate total fee amount
-  const totalFee = fees.reduce((sum, fee) => sum + fee.amount, 0);
+  const totalFee = fees.reduce((sum, fee) => {
+    if (fee.isPercentage) {
+      return sum + (totalOriginal * fee.amount) / 100;
+    } else {
+      return sum + fee.amount;
+    }
+  }, 0);
 
   // Calculate the grand total
   const grandTotal = totalOriginal - totalDiscount + totalFee;
