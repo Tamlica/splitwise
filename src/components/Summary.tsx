@@ -1,22 +1,54 @@
-import { Person, SummaryResult } from '../types';
+import { useState } from 'react';
+import { Person, SummaryResult, Discount, Fee } from '../types';
 import { formatCurrency, roundUpToThousand } from '../utils/formatters';
-import { Receipt, FileDown, FileSpreadsheet } from 'lucide-react';
+import { Receipt, FileDown, FileSpreadsheet, Save, CheckCircle } from 'lucide-react';
 import { exportToPDF } from '../utils/exportToPDF';
 import { exportToCSV } from '../utils/exportToCSV';
+import { saveBill } from '../utils/supabaseOperations';
 
 interface SummaryProps {
   people: Person[];
   results: SummaryResult;
   restaurantName: string;
+  discounts: Discount[];
+  fees: Fee[];
+  isEqualSplit: boolean;
+  totalAmount: string;
 }
 
-const Summary = ({ people, results, restaurantName }: SummaryProps) => {
+const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSplit, totalAmount }: SummaryProps) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
   const handleExportPDF = () => {
     exportToPDF(results, restaurantName);
   };
 
   const handleExportCSV = () => {
     exportToCSV(results, restaurantName);
+  };
+
+  const handleSaveBill = async () => {
+    if (people.length === 0) {
+      setSaveError('Cannot save empty bill');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError('');
+    setSaveSuccess(false);
+
+    try {
+      await saveBill(people, discounts, fees, results, restaurantName);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      setSaveError('Failed to save bill. Please try again.');
+      console.error('Save error:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -30,6 +62,27 @@ const Summary = ({ people, results, restaurantName }: SummaryProps) => {
         </div>
         {people.length > 0 && (
           <div className="flex gap-2">
+            <button
+              onClick={handleSaveBill}
+              disabled={isSaving}
+              className={`px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200 ${
+                saveSuccess
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50'
+              }`}
+            >
+              {saveSuccess ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  {isSaving ? 'Saving...' : 'Save'}
+                </>
+              )}
+            </button>
             <button
               onClick={handleExportPDF}
               className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200"
@@ -47,6 +100,12 @@ const Summary = ({ people, results, restaurantName }: SummaryProps) => {
           </div>
         )}
       </div>
+
+      {saveError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm">{saveError}</p>
+        </div>
+      )}
 
       {people.length > 0 ? (
         <>
