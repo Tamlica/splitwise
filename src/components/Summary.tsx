@@ -49,7 +49,6 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       );
   
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       setSaveError('Failed to save bill. Please try again.');
       console.error('Save error:', error);
