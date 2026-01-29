@@ -149,6 +149,20 @@ const RecentBillsList = () => {
                           {allPaid ? 'Completed' : `${paidCount}/${totalPeople} paid`}
                         </span>
                       </td>
+                      <td className="py-4 px-6 text-center">
+                        <button
+                          onClick={(e) => handleDeleteBill(bill.id, bill.restaurant_name, e)}
+                          disabled={deletingBillId === bill.id}
+                          className="text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                          title="Delete bill"
+                        >
+                          {deletingBillId === bill.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}

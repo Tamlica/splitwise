@@ -169,3 +169,17 @@ export const updatePersonPaidStatus = async (personId: string, isPaid: boolean):
     throw error;
   }
 };
+
+export const deleteBill = async (billId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('bills')
+      .delete()
+      .eq('id', billId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting bill:', error);
+    throw error;
+  }
+};

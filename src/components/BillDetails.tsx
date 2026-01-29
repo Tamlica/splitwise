@@ -85,16 +85,6 @@ const BillDetails = () => {
     }
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setShareUrlCopied(true);
-      setTimeout(() => setShareUrlCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy URL:', err);
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

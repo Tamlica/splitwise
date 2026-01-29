@@ -52,7 +52,7 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+    <div ref={summaryTableRef} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-800">Summary</h2>
@@ -66,15 +66,15 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
               onClick={handleSaveBill}
               disabled={isSaving}
               className={`px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200 ${
-                saveSuccess
+                saveSuccess || linkCopied
                   ? 'bg-green-100 text-green-700'
                   : 'bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50'
               }`}
             >
-              {saveSuccess ? (
+              {saveSuccess || linkCopied ? (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  Saved!
+                  {linkCopied ? 'Link Copied!' : 'Saved!'}
                 </>
               ) : (
                 <>
