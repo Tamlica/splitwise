@@ -42,11 +42,14 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
     try {
       const billId = await saveBill(people, discounts, fees, results, restaurantName);
   
-      await copyRichBillSummaryToClipboard(
-        billId,
-        restaurantName,
-        summaryTableRef.current
-      );
+      // await copyRichBillSummaryToClipboard(
+      //   billId,
+      //   restaurantName,
+      //   summaryTableRef.current
+      // );
+
+          const shareUrl = `${window.location.origin}/bill/${billId}`;
+      await copyToClipboard(shareUrl);
   
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
