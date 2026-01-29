@@ -16,6 +16,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { copyToClipboard, copyRichBillSummaryToClipboard } from '../utils/clipboardUtils';
 
 const BillDetails = () => {
   const { billId } = useParams<{ billId: string }>();
