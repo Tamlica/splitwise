@@ -32,21 +32,55 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
     exportToCSV(results, restaurantName);
   };
 
+  // const handleSaveBill = async () => {
+  //   if (people.length === 0) {
+  //     setSaveError('Cannot save empty bill');
+  //     return;
+  //   }
+
+  //   setIsSaving(true);
+  //   setSaveError('');
+  //   setSaveSuccess(false);
+
+  //   try {
+  //     const bill = await saveBill(people, discounts, fees, results, restaurantName);
+  //     setSaveSuccess(true);
+  //     setTimeout(() => setSaveSuccess(false), 3000);
+  //     copyRichBillSummaryToClipboard(bill, restaurantName, summaryTableRef)
+  //   } catch (error) {
+  //     setSaveError('Failed to save bill. Please try again.');
+  //     console.error('Save error:', error);
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
   const handleSaveBill = async () => {
     if (people.length === 0) {
       setSaveError('Cannot save empty bill');
       return;
     }
-
+  
+    if (!summaryTableRef.current) {
+      console.error('Summary ref not mounted');
+      return;
+    }
+  
     setIsSaving(true);
     setSaveError('');
     setSaveSuccess(false);
-
+  
     try {
-      const bill = await saveBill(people, discounts, fees, results, restaurantName);
+      const billId = await saveBill(people, discounts, fees, results, restaurantName);
+  
+      await copyRichBillSummaryToClipboard(
+        billId,
+        restaurantName,
+        summaryTableRef.current
+      );
+  
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-      copyRichBillSummaryToClipboard(bill, restaurantName, summaryTableRef)
     } catch (error) {
       setSaveError('Failed to save bill. Please try again.');
       console.error('Save error:', error);
@@ -54,6 +88,7 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       setIsSaving(false);
     }
   };
+
 
   return (
     <div ref={summaryTableRef} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
