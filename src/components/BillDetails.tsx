@@ -79,7 +79,7 @@ const BillDetails = () => {
         });
       } catch (err) {
         // Fallback to copying URL
-        copyToClipboard(shareUrl);
+        copyToClipboard(bill.restaurant_name, shareUrl);
       }
     } else {
       copyToClipboard(shareUrl);
