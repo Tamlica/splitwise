@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Person, SummaryResult, Discount, Fee } from '../types';
 import { formatCurrency, roundUpToThousand } from '../utils/formatters';
 import { Receipt, FileDown, FileSpreadsheet, Save, CheckCircle } from 'lucide-react';
 import { exportToPDF } from '../utils/exportToPDF';
 import { exportToCSV } from '../utils/exportToCSV';
 import { saveBill } from '../utils/supabaseOperations';
+import { copyToClipboard, copyRichBillSummaryToClipboard } from '../utils/clipboardUtils';
 
 interface SummaryProps {
   people: Person[];
@@ -17,9 +18,11 @@ interface SummaryProps {
 }
 
 const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSplit, totalAmount }: SummaryProps) => {
+  const summaryTableRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleExportPDF = () => {
     exportToPDF(results, restaurantName);
