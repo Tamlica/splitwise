@@ -80,9 +80,11 @@ const BillDetails = () => {
       } catch (err) {
         // Fallback to copying URL
         copyToClipboard(shareUrl);
+        copyRichBillSummaryToClipboard(bill?.id, bill?.restaurant_name);
       }
     } else {
       copyToClipboard(shareUrl);
+      copyRichBillSummaryToClipboard(bill?.id, bill?.restaurant_name);
     }
   };
 
