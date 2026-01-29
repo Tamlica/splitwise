@@ -1,6 +1,11 @@
 import html2canvas from 'html2canvas';
 
-export const copyToClipboard = async (text: string): Promise<void> => {
+export const copyToClipboard = async (
+  title: string,
+  link: string
+): Promise<void> => {
+  const text = `${title || "Maksi"}\n${link}`;
+
   try {
     await navigator.clipboard.writeText(text);
   } catch (err) {
