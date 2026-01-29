@@ -4,7 +4,7 @@ export const copyToClipboard = async (
   title: string,
   link: string
 ): Promise<void> => {
-  const text = `${title || "Maksi"}\n${link}`;
+  const text = `📍 ${title || "Maksi"}\n${link}`;
 
   try {
     await navigator.clipboard.writeText(text);
