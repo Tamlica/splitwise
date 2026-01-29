@@ -46,7 +46,7 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       const bill = await saveBill(people, discounts, fees, results, restaurantName);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-      copyRichBillSummaryToClipboard(bill, FileSpreadsheet, summaryTableRef)
+      copyRichBillSummaryToClipboard(bill, restaurantName, summaryTableRef)
     } catch (error) {
       setSaveError('Failed to save bill. Please try again.');
       console.error('Save error:', error);
