@@ -47,7 +47,7 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       //   restaurantName,
       //   summaryTableRef.current
       // );
-
+      const shareUrl = `${window.location.origin}/bill/${billId}`;
       await copyToClipboard(restaurantName, shareUrl);
   
       setSaveSuccess(true);
