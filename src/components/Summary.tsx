@@ -24,14 +24,6 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
   const [saveError, setSaveError] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const handleExportPDF = () => {
-    exportToPDF(results, restaurantName);
-  };
-
-  const handleExportCSV = () => {
-    exportToCSV(results, restaurantName);
-  };
-
   const handleSaveBill = async () => {
     if (people.length === 0) {
       setSaveError('Cannot save empty bill');
@@ -98,20 +90,6 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
                   {isSaving ? 'Saving...' : 'Save'}
                 </>
               )}
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200"
-            >
-              <FileDown className="h-4 w-4" />
-              PDF
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="bg-teal-100 text-teal-700 hover:bg-teal-200 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200"
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              CSV
             </button>
           </div>
         )}
