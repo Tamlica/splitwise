@@ -32,29 +32,6 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
     exportToCSV(results, restaurantName);
   };
 
-  // const handleSaveBill = async () => {
-  //   if (people.length === 0) {
-  //     setSaveError('Cannot save empty bill');
-  //     return;
-  //   }
-
-  //   setIsSaving(true);
-  //   setSaveError('');
-  //   setSaveSuccess(false);
-
-  //   try {
-  //     const bill = await saveBill(people, discounts, fees, results, restaurantName);
-  //     setSaveSuccess(true);
-  //     setTimeout(() => setSaveSuccess(false), 3000);
-  //     copyRichBillSummaryToClipboard(bill, restaurantName, summaryTableRef)
-  //   } catch (error) {
-  //     setSaveError('Failed to save bill. Please try again.');
-  //     console.error('Save error:', error);
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // };
-
   const handleSaveBill = async () => {
     if (people.length === 0) {
       setSaveError('Cannot save empty bill');
