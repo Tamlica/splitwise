@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SavedBill } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { getRecentBills } from '../utils/supabaseOperations';
-import { Receipt, Calendar, MapPin, Users, Loader2 } from 'lucide-react';
+import { getRecentBills, deleteBill } from '../utils/supabaseOperations';
+import { Receipt, Calendar, MapPin, Users, Loader2, Trash2 } from 'lucide-react';
 
 const RecentBillsList = () => {
   const [bills, setBills] = useState<SavedBill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBills = async () => {
@@ -34,6 +35,29 @@ const RecentBillsList = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleDeleteBill = async (billId: string, restaurantName: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const confirmMessage = `Are you sure you want to delete the bill from "${restaurantName || 'Unnamed Restaurant'}"? This action cannot be undone.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    setDeletingBillId(billId);
+    
+    try {
+      await deleteBill(billId);
+      setBills(prevBills => prevBills.filter(bill => bill.id !== billId));
+    } catch (err) {
+      console.error('Error deleting bill:', err);
+      alert('Failed to delete bill. Please try again.');
+    } finally {
+      setDeletingBillId(null);
+    }
   };
 
   if (loading) {
