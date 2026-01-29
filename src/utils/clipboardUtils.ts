@@ -52,12 +52,12 @@ export const copyRichBillSummaryToClipboard = async (
       await navigator.clipboard.write([clipboardItem]);
     } else {
       // Fallback to plain text
-      await copyToClipboard(shareUrl);
+      await copyToClipboard(restaurantName, shareUrl);
     }
   } catch (err) {
     console.error('Failed to copy rich content to clipboard:', err);
     // Fallback to plain text
     const shareUrl = `${window.location.origin}/bill/${billId}`;
-    await copyToClipboard(shareUrl);
+    await copyToClipboard(restaurantName, shareUrl);
   }
 };
