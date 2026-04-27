@@ -3,25 +3,19 @@ import { Link } from 'react-router-dom';
 import { SavedBill } from '../types';
 import { formatCurrency } from '../utils/formatters';
 import { getRecentBills, deleteBill } from '../utils/supabaseOperations';
-import { Receipt, Calendar, MapPin, Users, Loader2, Trash2, Search, Filter, X } from 'lucide-react';
+import { Receipt, Calendar, MapPin, Users, Loader2, Trash2 } from 'lucide-react';
 
 const RecentBillsList = () => {
   const [bills, setBills] = useState<SavedBill[]>([]);
-  const [filteredBills, setFilteredBills] = useState<SavedBill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending' | 'partial'>('all');
-  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchBills = async () => {
       try {
         const data = await getRecentBills();
         setBills(data);
-        setFilteredBills(data);
       } catch (err) {
         setError('Failed to load recent bills');
         console.error('Error fetching bills:', err);
@@ -33,60 +27,6 @@ const RecentBillsList = () => {
     fetchBills();
   }, []);
 
-  useEffect(() => {
-    let filtered = [...bills];
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(bill =>
-        bill.restaurant_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(bill => {
-        const paidCount = bill.bill_people.filter(person => person.is_paid).length;
-        const totalPeople = bill.bill_people.length;
-        
-        switch (statusFilter) {
-          case 'completed':
-            return paidCount === totalPeople && totalPeople > 0;
-          case 'pending':
-            return paidCount === 0;
-          case 'partial':
-            return paidCount > 0 && paidCount < totalPeople;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Apply date filter
-    if (dateFilter !== 'all') {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      filtered = filtered.filter(bill => {
-        const billDate = new Date(bill.created_at);
-        
-        switch (dateFilter) {
-          case 'today':
-            return billDate >= today;
-          case 'week':
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            return billDate >= weekAgo;
-          case 'month':
-            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-            return billDate >= monthAgo;
-          default:
-            return true;
-        }
-      });
-    }
-
-    setFilteredBills(filtered);
-  }, [bills, searchTerm, statusFilter, dateFilter]);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -120,13 +60,6 @@ const RecentBillsList = () => {
     }
   };
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('all');
-    setDateFilter('all');
-  };
-
-  const hasActiveFilters = searchTerm.trim() || statusFilter !== 'all' || dateFilter !== 'all';
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-6 max-w-7xl">
@@ -157,100 +90,8 @@ const RecentBillsList = () => {
   return (
     <main className="container mx-auto px-4 py-6 max-w-7xl">
       <div className="mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Recent Bills</h1>
-            <p className="text-gray-600">View and manage your saved split bills</p>
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center px-4 py-2 rounded-md border transition-colors ${
-              showFilters || hasActiveFilters
-                ? 'bg-teal-50 border-teal-300 text-teal-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-            {hasActiveFilters && (
-              <span className="ml-2 bg-teal-600 text-white text-xs px-2 py-0.5 rounded-full">
-                {[searchTerm.trim() && 'search', statusFilter !== 'all' && 'status', dateFilter !== 'all' && 'date']
-                  .filter(Boolean).length}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Search and Filters */}
-        <div className={`transition-all duration-200 overflow-hidden ${showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search restaurants or people..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="completed">Completed</option>
-                  <option value="partial">Partially Paid</option>
-                  <option value="pending">Pending</option>
-                </select>
-              </div>
-
-              {/* Date Filter */}
-              <div>
-                <select
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">Last 7 Days</option>
-                  <option value="month">Last 30 Days</option>
-                </select>
-              </div>
-
-              {/* Clear Filters */}
-              <div>
-                <button
-                  onClick={clearFilters}
-                  disabled={!hasActiveFilters}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Results Summary */}
-        {hasActiveFilters && (
-          <div className="mb-4 text-sm text-gray-600">
-            Showing {filteredBills.length} of {bills.length} bills
-            {searchTerm.trim() && (
-              <span className="ml-2">
-                matching "<span className="font-medium">{searchTerm}</span>"
-              </span>
-            )}
-          </div>
-        )}
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Recent Bills</h1>
+        <p className="text-gray-600">View and manage your saved split bills</p>
       </div>
 
       {bills.length === 0 ? (
@@ -265,23 +106,6 @@ const RecentBillsList = () => {
             Create New Bill
           </Link>
         </div>
-      ) : filteredBills.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
-          <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-800 mb-2">No bills found</h3>
-          <p className="text-gray-600 mb-6">
-            {searchTerm.trim() 
-              ? `No bills found matching "${searchTerm}" in restaurants or people names`
-              : "Try adjusting your filter criteria"
-            }
-          </p>
-          <button
-            onClick={clearFilters}
-            className="bg-teal-600 text-white px-6 py-2 rounded-md hover:bg-teal-700 transition-colors"
-          >
-            Clear Filters
-          </button>
-        </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
@@ -293,11 +117,10 @@ const RecentBillsList = () => {
                   <th className="text-right py-4 px-6 font-medium text-gray-700">Total</th>
                   <th className="text-left py-4 px-6 font-medium text-gray-700">Date</th>
                   <th className="text-center py-4 px-6 font-medium text-gray-700">Status</th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredBills.map((bill) => {
+                {bills.map((bill) => {
                   const paidCount = bill.bill_people.filter(person => person.is_paid).length;
                   const totalPeople = bill.bill_people.length;
                   const allPaid = paidCount === totalPeople && totalPeople > 0;
