@@ -39,7 +39,10 @@ const RecentBillsList = () => {
     // Apply search filter
     if (searchTerm.trim()) {
       filtered = filtered.filter(bill =>
-        bill.restaurant_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        bill.restaurant_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bill.bill_people.some(person => 
+          person.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       );
     }
 
