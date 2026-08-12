@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import PeopleSection from './components/PeopleSection';
@@ -7,8 +7,10 @@ import FeesSection from './components/FeesSection';
 import Summary from './components/Summary';
 import RecentBillsList from './components/RecentBillsList';
 import BillDetails from './components/BillDetails';
-import { Person, Discount, Fee } from './types';
+import MembersPage from './components/MembersPage';
+import { Person, Discount, Fee, Member } from './types';
 import { calculateFinalAmounts } from './utils/calculations';
+import { getActiveMembers } from './utils/lunchBotOperations';
 
 function App() {
   const [people, setPeople] = useState<Person[]>([]);
@@ -17,6 +19,14 @@ function App() {
   const [isEqualSplit, setIsEqualSplit] = useState(false);
   const [totalAmount, setTotalAmount] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [payerId, setPayerId] = useState('');
+
+  useEffect(() => {
+    getActiveMembers()
+      .then(setMembers)
+      .catch((err) => console.error('Failed to load members:', err));
+  }, []);
 
   const handleReset = () => {
     setPeople([]);
@@ -25,6 +35,7 @@ function App() {
     setIsEqualSplit(false);
     setTotalAmount('');
     setRestaurantName('');
+    setPayerId('');
   };
 
   const results = calculateFinalAmounts(people, discounts, fees, isEqualSplit, totalAmount);
@@ -58,26 +69,30 @@ function App() {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="space-y-6">
-                <PeopleSection 
-                  people={people} 
+                <PeopleSection
+                  people={people}
                   setPeople={setPeople}
                   isEqualSplit={isEqualSplit}
                   setIsEqualSplit={setIsEqualSplit}
                   totalAmount={totalAmount}
                   setTotalAmount={setTotalAmount}
+                  members={members}
                 />
                 <DiscountsSection discounts={discounts} setDiscounts={setDiscounts} />
                 <FeesSection fees={fees} setFees={setFees} />
               </div>
               <div className="lg:col-span-2 space-y-6">
-                <Summary 
-                  people={people} 
-                  results={results} 
+                <Summary
+                  people={people}
+                  results={results}
                   restaurantName={restaurantName}
                   discounts={discounts}
                   fees={fees}
                   isEqualSplit={isEqualSplit}
                   totalAmount={totalAmount}
+                  members={members}
+                  payerId={payerId}
+                  setPayerId={setPayerId}
                 />
               </div>
             </div>
@@ -85,6 +100,7 @@ function App() {
         } />
         <Route path="/history" element={<RecentBillsList />} />
         <Route path="/bill/:billId" element={<BillDetails />} />
+        <Route path="/members" element={<MembersPage />} />
       </Routes>
     </div>
   );

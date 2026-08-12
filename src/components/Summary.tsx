@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
-import { Person, SummaryResult, Discount, Fee } from '../types';
+import { Person, SummaryResult, Discount, Fee, Member } from '../types';
 import { formatCurrency, roundUpToThousand } from '../utils/formatters';
 import { Receipt, FileDown, FileSpreadsheet, Save, CheckCircle } from 'lucide-react';
 import { exportToPDF } from '../utils/exportToPDF';
 import { exportToCSV } from '../utils/exportToCSV';
 import { saveBill } from '../utils/supabaseOperations';
+import { createOrderWithItems } from '../utils/lunchBotOperations';
 import { copyToClipboard, copyRichBillSummaryToClipboard } from '../utils/clipboardUtils';
 
 interface SummaryProps {
@@ -15,9 +16,12 @@ interface SummaryProps {
   fees: Fee[];
   isEqualSplit: boolean;
   totalAmount: string;
+  members: Member[];
+  payerId: string;
+  setPayerId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSplit, totalAmount }: SummaryProps) => {
+const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSplit, totalAmount, members, payerId, setPayerId }: SummaryProps) => {
   const summaryTableRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -29,19 +33,30 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       setSaveError('Cannot save empty bill');
       return;
     }
-  
+
+    if (!payerId) {
+      setSaveError('Select who paid before saving');
+      return;
+    }
+
     if (!summaryTableRef.current) {
       console.error('Summary ref not mounted');
       return;
     }
-  
+
     setIsSaving(true);
     setSaveError('');
     setSaveSuccess(false);
-  
+
     try {
       const billId = await saveBill(people, discounts, fees, results, restaurantName);
-  
+
+      const memberIdByName = members.reduce<Record<string, string>>((acc, member) => {
+        acc[member.name] = member.id;
+        return acc;
+      }, {});
+      await createOrderWithItems(payerId, restaurantName, people, results, memberIdByName);
+
       // await copyRichBillSummaryToClipboard(
       //   billId,
       //   restaurantName,
@@ -49,7 +64,7 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
       // );
       const shareUrl = `${window.location.origin}/bill/${billId}`;
       await copyToClipboard(restaurantName, shareUrl);
-  
+
       setSaveSuccess(true);
     } catch (error) {
       setSaveError('Failed to save bill. Please try again.');
@@ -70,7 +85,19 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
           )}
         </div>
         {people.length > 0 && (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <select
+              value={payerId}
+              onChange={(e) => setPayerId(e.target.value)}
+              className="p-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Who paid?</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
             <button
               onClick={handleSaveBill}
               disabled={isSaving}

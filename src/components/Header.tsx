@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { History } from 'lucide-react';
+import { History, Users } from 'lucide-react';
 
 interface HeaderProps {
   onReset: () => void;
@@ -27,6 +27,13 @@ const Header = ({ onReset }: HeaderProps) => {
             >
               <History className="h-4 w-4" />
               <span>History</span>
+            </Link>
+            <Link
+              to="/members"
+              className="bg-teal-700 hover:bg-teal-800 px-4 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200"
+            >
+              <Users className="h-4 w-4" />
+              <span>Members</span>
             </Link>
             {isHomePage && (
               <button

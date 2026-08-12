@@ -87,3 +87,11 @@ export interface SavedBillFee {
   amount: number;
   is_percentage: boolean;
 }
+
+export interface Member {
+  id: string;
+  name: string;
+  telegram_username: string | null;
+  active: boolean;
+  created_at: string;
+}

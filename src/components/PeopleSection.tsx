@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Person, FoodItem } from '../types';
+import { Person, FoodItem, Member } from '../types';
+import { Link } from 'react-router-dom';
 import { UserPlus, Trash2, Users, Plus, X } from 'lucide-react';
 
 interface PeopleSectionProps {
@@ -9,29 +10,34 @@ interface PeopleSectionProps {
   setIsEqualSplit: React.Dispatch<React.SetStateAction<boolean>>;
   totalAmount: string;
   setTotalAmount: React.Dispatch<React.SetStateAction<string>>;
+  members: Member[];
 }
 
-const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount }: PeopleSectionProps) => {
-  const [name, setName] = useState('');
+const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount, members }: PeopleSectionProps) => {
+  const [selectedMemberId, setSelectedMemberId] = useState('');
   const [foodInputs, setFoodInputs] = useState<{[personId: string]: {name: string, price: string}}>({});
   const [error, setError] = useState('');
 
+  const availableMembers = members.filter(
+    (member) => !people.some((person) => person.name === member.name)
+  );
+
   const handleAddPerson = () => {
-    if (!name.trim()) {
-      setError('Name is required');
+    const member = members.find((m) => m.id === selectedMemberId);
+    if (!member) {
+      setError('Select a member to add');
       return;
     }
-    
 
     const newPerson: Person = {
       id: Date.now().toString(),
-      name: name.trim(),
+      name: member.name,
       amount: 0,
       foods: [],
     };
 
     setPeople([...people, newPerson]);
-    setName('');
+    setSelectedMemberId('');
     setError('');
   };
 
@@ -149,27 +155,41 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
       )}
 
       <div className="mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-2">
-          <div className="sm:col-span-9">
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, handleAddPerson)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
+        {members.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No members yet.{' '}
+            <Link to="/members" className="text-teal-600 hover:underline">
+              Add members
+            </Link>{' '}
+            first, then add them here.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-2">
+            <div className="sm:col-span-9">
+              <select
+                value={selectedMemberId}
+                onChange={(e) => setSelectedMemberId(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="">Select a member...</option>
+                {availableMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-3">
+              <button
+                onClick={handleAddPerson}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Add</span>
+              </button>
+            </div>
           </div>
-          <div className="sm:col-span-3">
-            <button
-              onClick={handleAddPerson}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>Add</span>
-            </button>
-          </div>
-        </div>
+        )}
         {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       </div>
 
