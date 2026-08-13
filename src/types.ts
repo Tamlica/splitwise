@@ -43,55 +43,35 @@ export interface SummaryResult {
   isEqualSplit: boolean;
 }
 
-export interface SavedBill {
-  id: string;
-  restaurant_name: string;
-  total_original: number;
-  total_discount: number;
-  total_fee: number;
-  grand_total: number;
-  is_equal_split: boolean;
-  created_at: string;
-  bill_people: SavedBillPerson[];
-  bill_discounts: SavedBillDiscount[];
-  bill_fees: SavedBillFee[];
-}
-
-export interface SavedBillPerson {
-  id: string;
-  name: string;
-  original_amount: number;
-  discount_amount: number;
-  fee_amount: number;
-  final_amount: number;
-  is_paid: boolean;
-  bill_food_items: SavedBillFoodItem[];
-}
-
-export interface SavedBillFoodItem {
-  id: string;
-  name: string;
-  price: number;
-}
-
-export interface SavedBillDiscount {
-  id: string;
-  name: string;
-  amount: number;
-  is_percentage: boolean;
-}
-
-export interface SavedBillFee {
-  id: string;
-  name: string;
-  amount: number;
-  is_percentage: boolean;
-}
-
 export interface Member {
   id: string;
   name: string;
   telegram_username: string | null;
   active: boolean;
   created_at: string;
+}
+
+export interface OrderItemWithMember {
+  id: string;
+  order_id: string;
+  member_id: string;
+  food: string;
+  original_amount: number;
+  final_amount: number;
+  settled: boolean;
+  settled_at: string | null;
+  members: { name: string } | null;
+}
+
+export interface OrderWithItems {
+  id: string;
+  group_chat_id: string;
+  location: string;
+  order_date: string;
+  payer_id: string;
+  telegram_message_id: number | null;
+  telegram_thread_id: number | null;
+  created_at: string;
+  payer: { name: string } | null;
+  order_items: OrderItemWithMember[];
 }

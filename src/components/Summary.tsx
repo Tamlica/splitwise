@@ -1,19 +1,14 @@
 import { useState, useRef } from 'react';
-import { Person, SummaryResult, Discount, Fee, Member } from '../types';
+import { Person, SummaryResult, Member } from '../types';
 import { formatCurrency, roundUpToThousand } from '../utils/formatters';
-import { Receipt, FileDown, FileSpreadsheet, Save, CheckCircle } from 'lucide-react';
-import { exportToPDF } from '../utils/exportToPDF';
-import { exportToCSV } from '../utils/exportToCSV';
-import { saveBill } from '../utils/supabaseOperations';
+import { Receipt, Save, CheckCircle } from 'lucide-react';
 import { createOrderWithItems } from '../utils/lunchBotOperations';
-import { copyToClipboard, copyRichBillSummaryToClipboard } from '../utils/clipboardUtils';
+import { copyToClipboard } from '../utils/clipboardUtils';
 
 interface SummaryProps {
   people: Person[];
   results: SummaryResult;
   restaurantName: string;
-  discounts: Discount[];
-  fees: Fee[];
   isEqualSplit: boolean;
   totalAmount: string;
   members: Member[];
@@ -21,7 +16,7 @@ interface SummaryProps {
   setPayerId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSplit, totalAmount, members, payerId, setPayerId }: SummaryProps) => {
+const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, members, payerId, setPayerId }: SummaryProps) => {
   const summaryTableRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -49,20 +44,13 @@ const Summary = ({ people, results, restaurantName, discounts, fees, isEqualSpli
     setSaveSuccess(false);
 
     try {
-      const billId = await saveBill(people, discounts, fees, results, restaurantName);
-
       const memberIdByName = members.reduce<Record<string, string>>((acc, member) => {
         acc[member.name] = member.id;
         return acc;
       }, {});
-      await createOrderWithItems(payerId, restaurantName, people, results, memberIdByName);
+      const orderId = await createOrderWithItems(payerId, restaurantName, people, results, memberIdByName);
 
-      // await copyRichBillSummaryToClipboard(
-      //   billId,
-      //   restaurantName,
-      //   summaryTableRef.current
-      // );
-      const shareUrl = `${window.location.origin}/bill/${billId}`;
+      const shareUrl = `${window.location.origin}/orders/${orderId}`;
       await copyToClipboard(restaurantName, shareUrl);
 
       setSaveSuccess(true);

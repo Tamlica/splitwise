@@ -6,7 +6,7 @@ import DiscountsSection from './components/DiscountsSection';
 import FeesSection from './components/FeesSection';
 import Summary from './components/Summary';
 import RecentBillsList from './components/RecentBillsList';
-import BillDetails from './components/BillDetails';
+import OrderDetails from './components/OrderDetails';
 import MembersPage from './components/MembersPage';
 import { Person, Discount, Fee, Member } from './types';
 import { calculateFinalAmounts } from './utils/calculations';
@@ -86,8 +86,6 @@ function App() {
                   people={people}
                   results={results}
                   restaurantName={restaurantName}
-                  discounts={discounts}
-                  fees={fees}
                   isEqualSplit={isEqualSplit}
                   totalAmount={totalAmount}
                   members={members}
@@ -99,7 +97,7 @@ function App() {
           </main>
         } />
         <Route path="/history" element={<RecentBillsList />} />
-        <Route path="/bill/:billId" element={<BillDetails />} />
+        <Route path="/orders/:orderId" element={<OrderDetails />} />
         <Route path="/members" element={<MembersPage />} />
       </Routes>
     </div>

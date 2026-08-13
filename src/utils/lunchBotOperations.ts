@@ -1,5 +1,28 @@
 import { supabase } from '../lib/supabase';
-import { Member, Person, SummaryResult } from '../types';
+import { Member, OrderWithItems, Person, SummaryResult } from '../types';
+
+const ORDER_WITH_ITEMS_SELECT = '*, payer:members(name), order_items(*, members(name))';
+
+export const getRecentOrders = async (): Promise<OrderWithItems[]> => {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(ORDER_WITH_ITEMS_SELECT)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
+};
+
+export const getOrderById = async (orderId: string): Promise<OrderWithItems | null> => {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(ORDER_WITH_ITEMS_SELECT)
+    .eq('id', orderId)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
 
 export const getActiveMembers = async (): Promise<Member[]> => {
   const { data, error } = await supabase
