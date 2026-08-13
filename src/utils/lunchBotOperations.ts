@@ -46,6 +46,7 @@ export const setMemberActive = async (memberId: string, active: boolean): Promis
 };
 
 const GROUP_CHAT_ID = import.meta.env.VITE_TELEGRAM_GROUP_CHAT_ID ?? '';
+const TOPIC_ID = import.meta.env.VITE_TELEGRAM_TOPIC_ID ?? '';
 
 export const createOrderWithItems = async (
   payerId: string,
@@ -58,6 +59,7 @@ export const createOrderWithItems = async (
     .from('orders')
     .insert({
       group_chat_id: GROUP_CHAT_ID,
+      telegram_thread_id: TOPIC_ID ? Number(TOPIC_ID) : null,
       location: location || 'Lunch order',
       payer_id: payerId,
     })
