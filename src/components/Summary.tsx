@@ -86,7 +86,7 @@ const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, m
                 </option>
               ))}
             </select>
-            <button
+            {/* <button
               onClick={handleSaveBill}
               disabled={isSaving}
               className={`px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200 ${
@@ -106,7 +106,7 @@ const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, m
                   {isSaving ? 'Saving...' : 'Save'}
                 </>
               )}
-            </button>
+            </button> */}
           </div>
         )}
       </div>
