@@ -14,7 +14,9 @@ interface PeopleSectionProps {
 }
 
 const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, totalAmount, setTotalAmount, members }: PeopleSectionProps) => {
-  const [selectedMemberId, setSelectedMemberId] = useState('');
+  const [memberQuery, setMemberQuery] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [foodInputs, setFoodInputs] = useState<{[personId: string]: {name: string, price: string}}>({});
   const [error, setError] = useState('');
 
@@ -22,10 +24,16 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
     (member) => !people.some((person) => person.name === member.name)
   );
 
-  const handleAddPerson = () => {
-    const member = members.find((m) => m.id === selectedMemberId);
+  const query = memberQuery.trim().toLowerCase();
+  const matchingMembers = availableMembers.filter((member) =>
+    [member.name, member.shopee_username, member.gojek_username, member.grab_username].some(
+      (value) => value?.toLowerCase().includes(query)
+    )
+  );
+
+  const handleAddPerson = (member: Member | undefined = matchingMembers[highlightedIndex]) => {
     if (!member) {
-      setError('Select a member to add');
+      setError(query ? 'No member matches that name or username' : 'Select a member to add');
       return;
     }
 
@@ -37,8 +45,24 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
     };
 
     setPeople([...people, newPerson]);
-    setSelectedMemberId('');
+    setMemberQuery('');
+    setHighlightedIndex(0);
     setError('');
+  };
+
+  const handleMemberKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setShowSuggestions(true);
+      if (matchingMembers.length === 0) return;
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      setHighlightedIndex((i) => (i + step + matchingMembers.length) % matchingMembers.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddPerson();
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
@@ -166,23 +190,56 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-2">
             <div className="sm:col-span-9">
-              <select
-                value={selectedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-                onKeyDown={(e) => handleKeyPress(e, handleAddPerson)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="">Select a member...</option>
-                {availableMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Type a name or Shopee/Gojek/Grab username..."
+                  value={memberQuery}
+                  onChange={(e) => {
+                    setMemberQuery(e.target.value);
+                    setHighlightedIndex(0);
+                    setShowSuggestions(true);
+                    setError('');
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setShowSuggestions(false)}
+                  onKeyDown={handleMemberKeyDown}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+                {showSuggestions && matchingMembers.length > 0 && (
+                  <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                    {matchingMembers.map((member, index) => {
+                      const usernames = [
+                        member.shopee_username && `Shopee: ${member.shopee_username}`,
+                        member.gojek_username && `Gojek: ${member.gojek_username}`,
+                        member.grab_username && `Grab: ${member.grab_username}`,
+                      ].filter(Boolean);
+                      return (
+                        <li
+                          key={member.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleAddPerson(member);
+                          }}
+                          onMouseEnter={() => setHighlightedIndex(index)}
+                          className={`px-3 py-2 cursor-pointer ${
+                            index === highlightedIndex ? 'bg-teal-50' : ''
+                          }`}
+                        >
+                          <div className="text-gray-800">{member.name}</div>
+                          {usernames.length > 0 && (
+                            <div className="text-xs text-gray-500">{usernames.join(' · ')}</div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             </div>
             <div className="sm:col-span-3">
               <button
-                onClick={handleAddPerson}
+                onClick={() => handleAddPerson()}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors duration-200"
               >
                 <UserPlus className="h-4 w-4" />
