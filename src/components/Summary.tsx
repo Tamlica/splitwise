@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Person, SummaryResult, Member } from '../types';
 import { formatCurrency, roundUpToThousand } from '../utils/formatters';
 import { Receipt, Save, CheckCircle } from 'lucide-react';
-import { createOrderWithItems } from '../utils/lunchBotOperations';
+import { createOrderWithItems } from '../utils/orderOperations';
 import { copyToClipboard } from '../utils/clipboardUtils';
 
 interface SummaryProps {
@@ -86,7 +86,7 @@ const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, m
                 </option>
               ))}
             </select>
-            {/* <button
+            <button
               onClick={handleSaveBill}
               disabled={isSaving}
               className={`px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200 ${
@@ -106,7 +106,7 @@ const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, m
                   {isSaving ? 'Saving...' : 'Save'}
                 </>
               )}
-            </button> */}
+            </button>
           </div>
         )}
       </div>

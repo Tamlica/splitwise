@@ -10,7 +10,7 @@ import OrderDetails from './components/OrderDetails';
 import MembersPage from './components/MembersPage';
 import { Person, Discount, Fee, Member } from './types';
 import { calculateFinalAmounts } from './utils/calculations';
-import { getActiveMembers } from './utils/lunchBotOperations';
+import { getActiveMembers } from './utils/orderOperations';
 
 function App() {
   const [people, setPeople] = useState<Person[]>([]);

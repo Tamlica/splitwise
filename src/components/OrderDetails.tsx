@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { OrderWithItems } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { getOrderById } from '../utils/lunchBotOperations';
+import { getOrderById, setOrderItemSettled } from '../utils/orderOperations';
 import {
   ArrowLeft,
   MapPin,
@@ -60,6 +60,23 @@ const OrderDetails = () => {
     await copyToClipboard(order?.location ?? '', shareUrl);
     setShareUrlCopied(true);
     setTimeout(() => setShareUrlCopied(false), 2000);
+  };
+
+  const handleToggleSettled = async (itemId: string, settled: boolean) => {
+    try {
+      const settledAt = await setOrderItemSettled(itemId, settled);
+      setOrder((prev) =>
+        prev && {
+          ...prev,
+          order_items: prev.order_items.map((item) =>
+            item.id === itemId ? { ...item, settled, settled_at: settledAt } : item
+          ),
+        }
+      );
+    } catch (err) {
+      console.error('Failed to update settlement:', err);
+      setError('Failed to update settlement');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -178,8 +195,7 @@ const OrderDetails = () => {
           People &amp; Settlement Status
         </h2>
         <p className="text-sm text-gray-500 mb-4">
-          Settlement is tracked via the Telegram group (tap the paid button, or use{' '}
-          <code className="bg-gray-100 px-1 rounded">/paid</code>) — it can't be changed from here.
+          Tap a status to mark someone as paid or unpaid.
         </p>
 
         <div className="space-y-4">
@@ -203,9 +219,12 @@ const OrderDetails = () => {
                   <div className="text-lg font-bold text-gray-800">
                     {formatCurrency(item.final_amount)}
                   </div>
-                  <div
-                    className={`mt-2 inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
-                      item.settled ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'
+                  <button
+                    onClick={() => handleToggleSettled(item.id, !item.settled)}
+                    className={`mt-2 inline-flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      item.settled
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
                     {item.settled ? (
@@ -219,7 +238,7 @@ const OrderDetails = () => {
                         Unpaid
                       </>
                     )}
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>

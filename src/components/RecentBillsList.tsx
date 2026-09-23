@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { OrderWithItems } from '../types';
 import { formatCurrency } from '../utils/formatters';
-import { getRecentOrders } from '../utils/lunchBotOperations';
+import { getRecentOrders } from '../utils/orderOperations';
 import { Receipt, Calendar, MapPin, Users, Loader2, Search, Filter, X } from 'lucide-react';
 
 const RecentBillsList = () => {

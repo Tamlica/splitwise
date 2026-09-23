@@ -23,12 +23,13 @@ App throws at startup if these are missing (`src/lib/supabase.ts`).
 - **Entry**: `src/main.tsx` → wraps `<App />` in `<BrowserRouter>`.
 - **Routes** (`src/App.tsx`):
   - `/` — main bill calculator (PeopleSection, DiscountsSection, FeesSection, Summary)
-  - `/history` — list of saved bills (`RecentBillsList`)
-  - `/bill/:billId` — single bill detail view (`BillDetails`)
+  - `/history` — list of saved orders (`RecentBillsList`)
+  - `/orders/:orderId` — single order view with paid/unpaid toggles (`OrderDetails`)
+  - `/members` — add/edit/deactivate members, each with optional Shopee/Gojek/Grab usernames (`MembersPage`)
 - **State**: all bill state lives in `App.tsx` via `useState`, passed down as props. No global store.
 - **Types**: `src/types.ts` — core domain types (Person, FoodItem, Discount, Fee, SavedBill, etc.)
 - **Calculations**: `src/utils/calculations.ts` — `calculateFinalAmounts()` applies discounts/fees, splits equally or by food items. Final amounts are rounded up to nearest thousand (`src/utils/formatters.ts`).
-- **Supabase**: `src/lib/supabase.ts` creates the client. All DB ops in `src/utils/supabaseOperations.ts`.
+- **Supabase**: `src/lib/supabase.ts` creates the client. Legacy bill ops in `src/utils/supabaseOperations.ts`; members/orders ops (incl. settlement toggling) in `src/utils/orderOperations.ts`.
 - **Exports**: `src/utils/exportToPDF.ts`, `src/utils/exportToCSV.ts`, `src/utils/clipboardUtils.ts`.
 
 ## Database Schema
@@ -38,6 +39,9 @@ Tables (see `supabase/migrations/`):
 - `bill_food_items` — individual food items, linked to `bill_people`
 - `bill_discounts` — discounts applied to a bill
 - `bill_fees` — fees applied to a bill
+- `members` — people who can be picked in a split (`name`, optional `shopee_username`/`gojek_username`/`grab_username`, soft-delete via `active`)
+- `orders` — saved lunch orders (`location`, `payer_id`, `order_date`)
+- `order_items` — per-member share of an order, with `settled`/`settled_at` toggled from the frontend
 
 All inserts happen in `saveBill()` — order matters: bill → people → food items → discounts → fees.
 

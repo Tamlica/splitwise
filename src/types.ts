@@ -46,7 +46,9 @@ export interface SummaryResult {
 export interface Member {
   id: string;
   name: string;
-  telegram_username: string | null;
+  shopee_username: string | null;
+  gojek_username: string | null;
+  grab_username: string | null;
   active: boolean;
   created_at: string;
 }
@@ -65,12 +67,9 @@ export interface OrderItemWithMember {
 
 export interface OrderWithItems {
   id: string;
-  group_chat_id: string;
   location: string;
   order_date: string;
   payer_id: string;
-  telegram_message_id: number | null;
-  telegram_thread_id: number | null;
   created_at: string;
   payer: { name: string } | null;
   order_items: OrderItemWithMember[];

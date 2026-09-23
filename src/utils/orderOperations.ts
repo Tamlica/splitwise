@@ -45,18 +45,43 @@ export const getAllMembers = async (): Promise<Member[]> => {
   return data ?? [];
 };
 
-export const addMember = async (name: string, telegramUsername: string): Promise<Member> => {
+export interface MemberUsernames {
+  shopee_username: string;
+  gojek_username: string;
+  grab_username: string;
+}
+
+const cleanUsernames = (usernames: MemberUsernames) => ({
+  shopee_username: usernames.shopee_username.trim() || null,
+  gojek_username: usernames.gojek_username.trim() || null,
+  grab_username: usernames.grab_username.trim() || null,
+});
+
+export const addMember = async (name: string, usernames: MemberUsernames): Promise<Member> => {
   const { data, error } = await supabase
     .from('members')
     .insert({
       name: name.trim(),
-      telegram_username: telegramUsername.trim() || null,
+      ...cleanUsernames(usernames),
     })
     .select()
     .single();
 
   if (error) throw error;
   return data;
+};
+
+export const updateMember = async (
+  memberId: string,
+  name: string,
+  usernames: MemberUsernames
+): Promise<void> => {
+  const { error } = await supabase
+    .from('members')
+    .update({ name: name.trim(), ...cleanUsernames(usernames) })
+    .eq('id', memberId);
+
+  if (error) throw error;
 };
 
 export const setMemberActive = async (memberId: string, active: boolean): Promise<void> => {
@@ -68,8 +93,16 @@ export const setMemberActive = async (memberId: string, active: boolean): Promis
   if (error) throw error;
 };
 
-const GROUP_CHAT_ID = import.meta.env.VITE_TELEGRAM_GROUP_CHAT_ID ?? '';
-const TOPIC_ID = import.meta.env.VITE_TELEGRAM_TOPIC_ID ?? '';
+export const setOrderItemSettled = async (itemId: string, settled: boolean): Promise<string | null> => {
+  const settledAt = settled ? new Date().toISOString() : null;
+  const { error } = await supabase
+    .from('order_items')
+    .update({ settled, settled_at: settledAt })
+    .eq('id', itemId);
+
+  if (error) throw error;
+  return settledAt;
+};
 
 export const createOrderWithItems = async (
   payerId: string,
@@ -81,8 +114,6 @@ export const createOrderWithItems = async (
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
-      group_chat_id: GROUP_CHAT_ID,
-      telegram_thread_id: TOPIC_ID ? Number(TOPIC_ID) : null,
       location: location || 'Lunch order',
       payer_id: payerId,
     })
