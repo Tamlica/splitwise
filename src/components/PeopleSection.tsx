@@ -169,6 +169,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
               <select
                 value={selectedMemberId}
                 onChange={(e) => setSelectedMemberId(e.target.value)}
+                onKeyDown={(e) => handleKeyPress(e, handleAddPerson)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="">Select a member...</option>
