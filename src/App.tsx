@@ -8,6 +8,8 @@ import Summary from './components/Summary';
 import RecentBillsList from './components/RecentBillsList';
 import OrderDetails from './components/OrderDetails';
 import MembersPage from './components/MembersPage';
+import ImportScreenshotModal, { ImportResult } from './components/ImportScreenshotModal';
+import { ImagePlus } from 'lucide-react';
 import { Person, Discount, Fee, Member } from './types';
 import { calculateFinalAmounts } from './utils/calculations';
 import { getActiveMembers } from './utils/orderOperations';
@@ -21,6 +23,7 @@ function App() {
   const [restaurantName, setRestaurantName] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
   const [payerId, setPayerId] = useState('');
+  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => {
     getActiveMembers()
@@ -38,6 +41,18 @@ function App() {
     setPayerId('');
   };
 
+  const handleImportApply = (imported: ImportResult) => {
+    const hasExisting = people.length > 0 || discounts.length > 0 || fees.length > 0;
+    if (hasExisting && !window.confirm('Replace the current people, discounts and fees with the imported ones?')) {
+      return;
+    }
+    setPeople(imported.people);
+    setDiscounts(imported.discounts);
+    setFees(imported.fees);
+    setIsEqualSplit(false);
+    setShowImport(false);
+  };
+
   const results = calculateFinalAmounts(people, discounts, fees, isEqualSplit, totalAmount);
 
   return (
@@ -48,9 +63,18 @@ function App() {
           <main className="container mx-auto px-4 py-6 max-w-7xl">
             <div className="mb-6">
               <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Restaurant / Place Name
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Restaurant / Place Name
+                  </label>
+                  <button
+                    onClick={() => setShowImport(true)}
+                    className="flex items-center space-x-1 text-sm text-teal-700 hover:text-teal-800"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                    <span>Import from screenshot</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   placeholder="Enter restaurant or place name..."
@@ -100,6 +124,13 @@ function App() {
         <Route path="/orders/:orderId" element={<OrderDetails />} />
         <Route path="/members" element={<MembersPage />} />
       </Routes>
+      {showImport && (
+        <ImportScreenshotModal
+          members={members}
+          onClose={() => setShowImport(false)}
+          onApply={handleImportApply}
+        />
+      )}
     </div>
   );
 }

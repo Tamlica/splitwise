@@ -31,6 +31,7 @@ App throws at startup if these are missing (`src/lib/supabase.ts`).
 - **Calculations**: `src/utils/calculations.ts` — `calculateFinalAmounts()` applies discounts/fees, splits equally or by food items. Final amounts are rounded up to nearest thousand (`src/utils/formatters.ts`).
 - **Supabase**: `src/lib/supabase.ts` creates the client. Legacy bill ops in `src/utils/supabaseOperations.ts`; members/orders ops (incl. settlement toggling) in `src/utils/orderOperations.ts`.
 - **Exports**: `src/utils/exportToPDF.ts`, `src/utils/exportToCSV.ts`, `src/utils/clipboardUtils.ts`.
+- **Screenshot import**: `ImportScreenshotModal` (button on `/`) → `src/utils/ocr/`. `runOcr.ts` runs Tesseract.js (lazy-loaded, image upscaled 2×) and groups words into rows; `index.ts` picks the first parser in `PARSERS` whose `detect()` matches; `matchMembers.ts` maps usernames to members. Only Shopee (`parsers/shopee.ts`) exists so far. To add Gojek/Grab, write one parser file implementing `OrderParser` and register it in `PARSERS`; build it against a real screenshot, don't guess the layout.
 
 ## Database Schema
 Tables (see `supabase/migrations/`):
