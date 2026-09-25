@@ -55,16 +55,19 @@ function rowText(row: OcrRow): string {
 }
 
 const SUBTOTAL = /subtotal/i;
-const DISCOUNT = /diskon|voucher|potongan|hemat/i;
-const FEE = /biaya|pajak|ongkir|pengiriman|layanan|tip\b/i;
-const NOTE = /catatan/i;
-const QTY = /^[x×]\s?\d+$/i;
-const ITEMS_END = /lihat\s+(lebih|less)/i;
+// The app follows the phone's language, so every label exists in Indonesian and English.
+const SECTION_START = /rincian\s+pesanan|item\s+details/i;
+const DISCOUNT = /diskon|discount|voucher|potongan|hemat/i;
+const FEE = /biaya|pajak|ongkir|pengiriman|layanan|\bfee\b|delivery|service|\btax\b|\btip\b/i;
+const NOTE = /catatan|\bnote\s*:/i;
+const NOTE_PREFIX = /^.*?(catatan\s+tambahan|note)\s*:?/i;
+const QTY = /[x×]\s?\d+$/i;
+const ITEMS_END = /lihat\s+(lebih|less)|view\s+(less|more)/i;
 
 function itemsSection(rows: OcrRow[], subtotalAt: number): OcrRow[] {
   let start = -1;
   for (let i = 0; i < subtotalAt; i++) {
-    if (/rincian\s+pesanan/i.test(rows[i].text)) start = i;
+    if (SECTION_START.test(rows[i].text)) start = i;
   }
   let end = subtotalAt;
   for (let i = start + 1; i < subtotalAt; i++) {
@@ -79,6 +82,9 @@ function itemsSection(rows: OcrRow[], subtotalAt: number): OcrRow[] {
 function parsePeople(rows: OcrRow[]): ParsedPerson[] {
   const people: ParsedPerson[] = [];
   let current: ParsedPerson | null = null;
+  // Between an item's price row and its "x N" row sit shop/variant captions and thumbnail
+  // junk ("SENDOX", "Gr"). Only after "x N" can a new username (or another item) follow.
+  let insideItem = false;
 
   for (const row of rows) {
     const text = rowText(row).trim();
@@ -86,18 +92,21 @@ function parsePeople(rows: OcrRow[]): ParsedPerson[] {
 
     if (prices.length > 0) {
       const name = cleanLabel(stripPrices(text));
+      if (!name) continue; // the struck-through original price sits on its own row
       if (!current) {
         current = { username: '', items: [] };
         people.push(current);
       }
-      current.items.push({ name, price: prices[prices.length - 1] });
+      // The shown price comes first; a struck-through original, if on the same row, comes after.
+      current.items.push({ name, price: prices[0] });
+      insideItem = true;
     } else if (NOTE.test(text)) {
       const item = current?.items[current.items.length - 1];
-      const note = text.replace(/^.*?catatan\s+tambahan\s*:?/i, '').trim();
+      const note = text.replace(NOTE_PREFIX, '').trim();
       if (item && note) item.name = `${item.name} (${note})`;
     } else if (QTY.test(text)) {
-      continue; // quantity marker; the listed price is already the line total
-    } else {
+      insideItem = false; // quantity marker; the listed price is already the line total
+    } else if (!insideItem) {
       const username = cleanUsername(text);
       if (username && !isNoise(username)) {
         current = { username, items: [] };
@@ -155,7 +164,7 @@ export const shopeeParser: OrderParser = {
 
   detect(rows) {
     const text = rows.map((r) => r.text).join('\n');
-    return /rincian\s+pesanan/i.test(text) && SUBTOTAL.test(text);
+    return SECTION_START.test(text) && SUBTOTAL.test(text);
   },
 
   parse(rows) {
