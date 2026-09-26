@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# brag launch videos
+brag-output*/
+
+# real order screenshots (contain other people's usernames)
+shopee-example.jpeg
