@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ImagePlus, Loader2, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2, X } from 'lucide-react';
 import { Discount, Fee, Member, Person } from '../types';
-import { parseScreenshot } from '../utils/ocr';
+import { parseScreenshots } from '../utils/ocr';
 import { matchMember } from '../utils/ocr/matchMembers';
 import { OrderApp } from '../utils/ocr/types';
 
@@ -37,6 +37,12 @@ interface DraftAdjustment {
   amount: string;
 }
 
+interface StagedFile {
+  key: string;
+  file: File;
+  previewUrl: string;
+}
+
 interface Draft {
   app: OrderApp;
   people: DraftPerson[];
@@ -53,22 +59,51 @@ const inputClass =
 
 const ImportScreenshotModal = ({ members, onClose, onApply }: ImportScreenshotModalProps) => {
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState({ index: 0, fraction: 0 });
   const [error, setError] = useState('');
+  const [files, setFiles] = useState<StagedFile[]>([]);
   const [draft, setDraft] = useState<Draft | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const filesRef = useRef(files);
+  filesRef.current = files;
 
-  const handleFile = async (file: File | undefined) => {
-    if (!file || busy) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose an image file.');
-      return;
-    }
+  useEffect(() => () => filesRef.current.forEach((f) => URL.revokeObjectURL(f.previewUrl)), []);
+
+  const addFiles = (incoming: File[]) => {
+    if (busy || incoming.length === 0) return;
+    const images = incoming.filter((f) => f.type.startsWith('image/'));
+    setError(images.length < incoming.length ? 'Only image files can be added.' : '');
+    setFiles((prev) => [
+      ...prev,
+      ...images.map((file) => ({ key: nextKey(), file, previewUrl: URL.createObjectURL(file) })),
+    ]);
+  };
+
+  const removeFile = (key: string) => {
+    const removed = files.find((f) => f.key === key);
+    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    setFiles((prev) => prev.filter((f) => f.key !== key));
+  };
+
+  const moveFile = (index: number, delta: -1 | 1) =>
+    setFiles((prev) => {
+      const target = index + delta;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+
+  const handleRead = async () => {
+    if (files.length === 0 || busy) return;
     setError('');
     setBusy(true);
-    setProgress(0);
+    setProgress({ index: 0, fraction: 0 });
     try {
-      const order = await parseScreenshot(file, setProgress);
+      const order = await parseScreenshots(
+        files.map((f) => f.file),
+        (index, fraction) => setProgress({ index, fraction })
+      );
       setDraft({
         app: order.app,
         warnings: order.warnings,
@@ -86,7 +121,7 @@ const ImportScreenshotModal = ({ members, onClose, onApply }: ImportScreenshotMo
         fees: order.fees.map((f) => ({ key: nextKey(), name: f.name, amount: String(f.amount) })),
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to read the screenshot.');
+      setError(err instanceof Error ? err.message : 'Failed to read the screenshots.');
     } finally {
       setBusy(false);
     }
@@ -94,8 +129,9 @@ const ImportScreenshotModal = ({ members, onClose, onApply }: ImportScreenshotMo
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'));
-      if (file) void handleFile(file);
+      if (draft) return;
+      const images = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
+      if (images.length > 0) addFiles(images);
     };
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
@@ -205,38 +241,77 @@ const ImportScreenshotModal = ({ members, onClose, onApply }: ImportScreenshotMo
         </div>
 
         <div className="p-4 overflow-y-auto space-y-4">
-          {!draft && (
-            <div
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                void handleFile(e.dataTransfer.files[0]);
-              }}
-              onClick={() => !busy && fileInput.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-teal-400"
-            >
-              {busy ? (
-                <div className="flex flex-col items-center gap-2 text-gray-600">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span>Reading screenshot… {Math.round(progress * 100)}%</span>
-                </div>
-              ) : (
+          {!draft && busy && (
+            <div className="flex flex-col items-center gap-2 p-8 text-gray-600">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>
+                Reading screenshot {progress.index + 1} of {files.length}… {Math.round(progress.fraction * 100)}%
+              </span>
+            </div>
+          )}
+
+          {!draft && !busy && (
+            <>
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  addFiles(Array.from(e.dataTransfer.files));
+                }}
+                onClick={() => fileInput.current?.click()}
+                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-teal-400"
+              >
                 <div className="flex flex-col items-center gap-2 text-gray-600">
                   <ImagePlus className="h-6 w-6" />
-                  <span>Drop, paste or click to choose a Shopee order-detail screenshot</span>
+                  <span>Drop, paste or click to add Shopee order-detail screenshots</span>
+                  <span className="text-xs text-gray-400">
+                    Long order? Add several screenshots in scroll order; overlapping items are merged.
+                  </span>
                 </div>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    addFiles(Array.from(e.target.files ?? []));
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+
+              {files.length > 0 && (
+                <ul className="space-y-2">
+                  {files.map((staged, index) => (
+                    <li key={staged.key} className="flex items-center gap-3 p-2 bg-gray-50 rounded-md">
+                      <span className="w-5 text-sm text-gray-500 text-center">{index + 1}</span>
+                      <img src={staged.previewUrl} alt="" className="h-12 w-8 object-cover object-top rounded border border-gray-200" />
+                      <span className="flex-1 min-w-0 truncate text-sm text-gray-700">{staged.file.name}</span>
+                      <button
+                        onClick={() => moveFile(index, -1)}
+                        disabled={index === 0}
+                        title="Move up"
+                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => moveFile(index, 1)}
+                        disabled={index === files.length - 1}
+                        title="Move down"
+                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => removeFile(staged.key)} title="Remove" className="text-gray-400 hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-              <input
-                ref={fileInput}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  void handleFile(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-            </div>
+            </>
           )}
 
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -309,20 +384,30 @@ const ImportScreenshotModal = ({ members, onClose, onApply }: ImportScreenshotMo
               onClick={() => setDraft(null)}
               className="px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100"
             >
-              Choose another
+              Back to screenshots
             </button>
           )}
           <button onClick={onClose} className="px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100">
             Cancel
           </button>
-          <button
-            onClick={handleApply}
-            disabled={!allMapped}
-            title={draft && !allMapped ? 'Choose a member for every person first' : undefined}
-            className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Apply to bill
-          </button>
+          {draft ? (
+            <button
+              onClick={handleApply}
+              disabled={!allMapped}
+              title={!allMapped ? 'Choose a member for every person first' : undefined}
+              className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Apply to bill
+            </button>
+          ) : (
+            <button
+              onClick={() => void handleRead()}
+              disabled={files.length === 0 || busy}
+              className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {files.length > 1 ? `Read ${files.length} screenshots` : 'Read screenshot'}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { OcrRow, OrderParser, ParsedAdjustment, ParsedOrder, ParsedPerson } from '../types';
+import { OcrRow, OrderParser, ParsedAdjustment, ParsedPerson } from '../types';
 
 // "Rp27.000", "-Rp7.280", tolerant of OCR reading "RP", "Rp27,000" or O/l/S for digits.
 const PRICE_PATTERN = /R[pP]\s?([0-9OoIlS][0-9OoIlS.,]*)/g;
@@ -61,16 +61,19 @@ const DISCOUNT = /diskon|discount|voucher|potongan|hemat/i;
 const FEE = /biaya|pajak|ongkir|pengiriman|layanan|\bfee\b|delivery|service|\btax\b|\btip\b/i;
 const NOTE = /catatan|\bnote\s*:/i;
 const NOTE_PREFIX = /^.*?(catatan\s+tambahan|note)\s*:?/i;
-const QTY = /[x×]\s?\d+$/i;
+// "x1", optionally preceded by one short OCR junk token ("po x1").
+const QTY = /^(\S{1,3}\s+)?[x×]\s?\d+$/i;
 const ITEMS_END = /lihat\s+(lebih|less)|view\s+(less|more)/i;
+const COLLAPSED = /lihat\s+lebih\s+banyak|view\s+more/i;
 
-function itemsSection(rows: OcrRow[], subtotalAt: number): OcrRow[] {
+/** Rows holding the item list: from the last section heading (if any) up to `limit`. */
+function itemsSection(rows: OcrRow[], limit: number): OcrRow[] {
   let start = -1;
-  for (let i = 0; i < subtotalAt; i++) {
+  for (let i = 0; i < limit; i++) {
     if (SECTION_START.test(rows[i].text)) start = i;
   }
-  let end = subtotalAt;
-  for (let i = start + 1; i < subtotalAt; i++) {
+  let end = limit;
+  for (let i = start + 1; i < limit; i++) {
     if (ITEMS_END.test(rows[i].text)) {
       end = i;
       break;
@@ -79,42 +82,48 @@ function itemsSection(rows: OcrRow[], subtotalAt: number): OcrRow[] {
   return rows.slice(start + 1, end);
 }
 
+const MIN_USERNAME_LENGTH = 3;
+
+/**
+ * The username sits on the row directly above that person's first item. Everything else that
+ * can precede an item row is noise: the "x N" quantity (often misread, so it must not be
+ * relied on), shop/variant captions (upper-case), thumbnail junk (too short).
+ */
+function usernameAbove(rows: OcrRow[], index: number): string {
+  if (index === 0) return '';
+  const text = rowText(rows[index - 1]).trim();
+  if (findPrices(text).length > 0 || NOTE.test(text) || QTY.test(text)) return '';
+  const username = cleanUsername(text);
+  const alnum = username.replace(/[^a-zA-Z0-9]/g, '');
+  return alnum.length >= MIN_USERNAME_LENGTH && /[a-z0-9]/.test(username) ? username : '';
+}
+
 function parsePeople(rows: OcrRow[]): ParsedPerson[] {
   const people: ParsedPerson[] = [];
   let current: ParsedPerson | null = null;
-  // Between an item's price row and its "x N" row sit shop/variant captions and thumbnail
-  // junk ("SENDOX", "Gr"). Only after "x N" can a new username (or another item) follow.
-  let insideItem = false;
 
-  for (const row of rows) {
+  rows.forEach((row, i) => {
     const text = rowText(row).trim();
     const prices = findPrices(text);
 
     if (prices.length > 0) {
       const name = cleanLabel(stripPrices(text));
-      if (!name) continue; // the struck-through original price sits on its own row
-      if (!current) {
-        current = { username: '', items: [] };
+      if (!name) return; // the struck-through original price sits on its own row
+
+      const username = usernameAbove(rows, i);
+      if (username || !current) {
+        current = { username, items: [] };
         people.push(current);
       }
       // The shown price comes first; a struck-through original, if on the same row, comes after.
       current.items.push({ name, price: prices[0] });
-      insideItem = true;
     } else if (NOTE.test(text)) {
       const item = current?.items[current.items.length - 1];
       const note = text.replace(NOTE_PREFIX, '').trim();
       if (item && note) item.name = `${item.name} (${note})`;
-    } else if (QTY.test(text)) {
-      insideItem = false; // quantity marker; the listed price is already the line total
-    } else if (!insideItem) {
-      const username = cleanUsername(text);
-      if (username && !isNoise(username)) {
-        current = { username, items: [] };
-        people.push(current);
-      }
     }
-  }
-  return people.filter((p) => p.items.length > 0);
+  });
+  return people;
 }
 
 function parseSummary(rows: OcrRow[]) {
@@ -143,21 +152,8 @@ function parseSummary(rows: OcrRow[]) {
   return { discounts, fees, subtotal, total };
 }
 
-function reconcile(order: Omit<ParsedOrder, 'warnings'>): string[] {
-  const warnings: string[] = [];
-  const itemsSum = order.people.reduce((s, p) => s + p.items.reduce((t, i) => t + i.price, 0), 0);
-  const discountSum = order.discounts.reduce((s, d) => s + d.amount, 0);
-  const feeSum = order.fees.reduce((s, f) => s + f.amount, 0);
-
-  if (order.subtotal !== null && order.subtotal !== itemsSum) {
-    warnings.push(`Items add up to ${itemsSum.toLocaleString('id-ID')} but the screenshot subtotal is ${order.subtotal.toLocaleString('id-ID')}.`);
-  }
-  if (order.total !== null && order.total !== itemsSum - discountSum + feeSum) {
-    warnings.push(`Items − discounts + fees is ${(itemsSum - discountSum + feeSum).toLocaleString('id-ID')} but the screenshot total is ${order.total.toLocaleString('id-ID')}.`);
-  }
-  if (order.total === null) warnings.push('Could not read the total from the screenshot.');
-  return warnings;
-}
+const COLLAPSED_WARNING =
+  'The item list looks collapsed ("View More"), so some items are missing. Expand it and screenshot again.';
 
 export const shopeeParser: OrderParser = {
   app: 'shopee',
@@ -167,12 +163,22 @@ export const shopeeParser: OrderParser = {
     return SECTION_START.test(text) && SUBTOTAL.test(text);
   },
 
+  /**
+   * Also accepts one screenshot of a long order: the heading and the summary may each be
+   * missing, and the first item may have no username row above it (it continues the previous
+   * screenshot's last person).
+   */
   parse(rows) {
     const subtotalAt = rows.findIndex((r) => SUBTOTAL.test(r.text));
-    const people = parsePeople(itemsSection(rows, subtotalAt));
-    const { discounts, fees, subtotal, total } = parseSummary(rows.slice(subtotalAt));
+    const people = parsePeople(itemsSection(rows, subtotalAt < 0 ? rows.length : subtotalAt));
+    const summary = parseSummary(subtotalAt < 0 ? [] : rows.slice(subtotalAt));
+    const collapsed = rows.some((r) => COLLAPSED.test(r.text));
 
-    const order = { app: 'shopee' as const, people, discounts, fees, subtotal, total };
-    return { ...order, warnings: reconcile(order) };
+    return {
+      app: 'shopee',
+      people,
+      ...summary,
+      warnings: collapsed ? [COLLAPSED_WARNING] : [],
+    };
   },
 };
