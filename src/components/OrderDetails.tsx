@@ -52,7 +52,7 @@ const OrderDetails = () => {
           url: shareUrl,
         });
         return;
-      } catch (err) {
+      } catch {
         // fall through to clipboard copy
       }
     }

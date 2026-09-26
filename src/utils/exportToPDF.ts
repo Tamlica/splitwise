@@ -34,7 +34,7 @@ export const exportToPDF = (results: SummaryResult, restaurantName?: string) => 
   });
 
   // Add overall summary
-  const finalY = (doc as any).lastAutoTable.finalY + 20;
+  const finalY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
   
   doc.setFontSize(14);
   doc.text('Overall Summary', 14, finalY);

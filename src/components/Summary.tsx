@@ -9,19 +9,16 @@ interface SummaryProps {
   people: Person[];
   results: SummaryResult;
   restaurantName: string;
-  isEqualSplit: boolean;
-  totalAmount: string;
   members: Member[];
   payerId: string;
   setPayerId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, members, payerId, setPayerId }: SummaryProps) => {
+const Summary = ({ people, results, restaurantName, members, payerId, setPayerId }: SummaryProps) => {
   const summaryTableRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleSaveBill = async () => {
     if (people.length === 0) {
@@ -90,15 +87,15 @@ const Summary = ({ people, results, restaurantName, isEqualSplit, totalAmount, m
               onClick={handleSaveBill}
               disabled={isSaving}
               className={`px-3 py-1.5 rounded flex items-center gap-1 text-sm transition-colors duration-200 ${
-                saveSuccess || linkCopied
+                saveSuccess
                   ? 'bg-green-100 text-green-700'
                   : 'bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50'
               }`}
             >
-              {saveSuccess || linkCopied ? (
+              {saveSuccess ? (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  {linkCopied ? 'Link Copied!' : 'Saved!'}
+                  Saved!
                 </>
               ) : (
                 <>

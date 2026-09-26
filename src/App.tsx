@@ -110,8 +110,6 @@ function App() {
                   people={people}
                   results={results}
                   restaurantName={restaurantName}
-                  isEqualSplit={isEqualSplit}
-                  totalAmount={totalAmount}
                   members={members}
                   payerId={payerId}
                   setPayerId={setPayerId}

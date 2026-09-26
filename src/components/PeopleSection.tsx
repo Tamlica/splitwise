@@ -112,9 +112,7 @@ const PeopleSection = ({ people, setPeople, isEqualSplit, setIsEqualSplit, total
     setFoodInputs(prev => ({
       ...prev,
       [personId]: {
-        name: '',
-        price: '',
-        ...prev[personId],
+        ...(prev[personId] ?? { name: '', price: '' }),
         [field]: value
       }
     }));

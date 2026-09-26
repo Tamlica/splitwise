@@ -178,7 +178,7 @@ const RecentBillsList = () => {
               <div>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="all">All Status</option>
@@ -191,7 +191,7 @@ const RecentBillsList = () => {
               <div>
                 <select
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value as any)}
+                  onChange={(e) => setDateFilter(e.target.value as typeof dateFilter)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
                   <option value="all">All Time</option>
